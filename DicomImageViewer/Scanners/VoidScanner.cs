@@ -45,26 +45,29 @@ namespace DicomImageViewer.Scanners
             var maxHeight = heightMap.Keys.Max();
             var minHeight = heightMap.Keys.Min();
 
+            Point3D center = point;
             //go up
             for (var h = point[axis]; h <= maxHeight; h++)
             {
-                var p = new Point3D(point)
+                var p = new Point3D(center)
                 {
                     [axis] = h
                 };
 
-                ScanProjection(p, axis, fixProbe, heightMap);
+                center = ScanProjection(p, axis, fixProbe, heightMap);
             }
+
+            center = point;
 
             ////go down
             for (var h = point[axis] - 1; h >= minHeight; h--)
             {
-                var p = new Point3D(point)
+                var p = new Point3D(center)
                 {
                     [axis] = h
                 };
 
-                ScanProjection(p, axis, fixProbe, heightMap);
+                center = ScanProjection(p, axis, fixProbe, heightMap);
             }
 
             _labelMap.FireUpdate();
@@ -101,21 +104,28 @@ namespace DicomImageViewer.Scanners
             return volume * xres * yres * zres;
         }
 
-        private void ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
+        private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
         {
+#if DEBUG
+            _labelMap.AddDebugPoint(point);
+#endif
             var projection = _scanData.GetProjection(axis, point[axis]);
 
             if (projection.Empty)
-                return;
+                return point;
 
             var scalarPoint = point.To2D(axis);
             ushort probe = projection.Pixels[scalarPoint.X, scalarPoint.Y];
 
             if (fixProbe.InRange(probe))
             {
-                _labelMap.Add(RayCasting(point, projection, axis, fixProbe));
+                var layer = RayCasting(point, projection, axis, fixProbe);
+                var center = CalculateLayerCenter(layer.ToList());
+                _labelMap.Add(layer);
 
                 _labelMap.AddCenter(point);
+
+                return center;
             }
             else
             {
@@ -123,11 +133,32 @@ namespace DicomImageViewer.Scanners
                 {
                     var mark = heightMap[point[axis]];
 
-                    _labelMap.Add(RayCasting(mark, projection, axis, fixProbe));
+                    var layer = RayCasting(mark, projection, axis, fixProbe);
+
+                    var center = CalculateLayerCenter(layer.ToList());
+                    _labelMap.Add(layer);
 
                     _labelMap.AddCenter(mark);
+
+                    return center;
                 }
+
+                return point;
             }
+        }
+
+        private Point3D CalculateLayerCenter(IList<Point3D> layer)
+        {
+            int x = 0;
+            int y = 0;
+
+            foreach(var mark in layer)
+            {
+                x += mark.X;
+                y += mark.Y;
+            }
+
+            return new Point3D(x / layer.Count, y / layer.Count, layer.First().Z);
         }
 
         private Probe GetStartingProbe(Point3D point)

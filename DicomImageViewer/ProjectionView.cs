@@ -89,6 +89,10 @@ namespace DicomImageViewer
             {
                 DrawCut(g);
                 DrawLabels(g);
+
+#if DEBUG
+                DrawDebugPoints(g);
+#endif
             }
             catch (Exception ex)
             {
@@ -118,6 +122,18 @@ namespace DicomImageViewer
                 var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
                 g.FillRectangle(Brushes.OrangeRed, point.X, point.Y, 2, 2);
             }           
+        }
+
+        private void DrawDebugPoints(Graphics g)
+        {
+            var imgSize = ImageSize();
+            var imgOffset = ImageOffset(imgSize);
+
+            foreach (var mark in _labelMap.GetDebugProjection(_axis, CurrentCutIndex))
+            {
+                var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
+                g.FillRectangle(Brushes.LimeGreen, point.X, point.Y, 2, 2);
+            }
         }
 
         private void CreateImage16()

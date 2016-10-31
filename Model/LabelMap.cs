@@ -6,10 +6,14 @@ namespace Model
 
     public interface ILabelMap
     {
+#if DEBUG
+        void AddDebugPoint(Point3D point);
+        IEnumerable<Point3D> GetDebugProjection(Axis axis, int index);
+#endif
         void Add(Point3D point);
         void Add(IEnumerable<Point3D> points);
         void AddCenter(Point3D point);
-
+                
         void Reset();
 
         IEnumerable<Point3D> GetProjection(Axis axis, int index);
@@ -25,6 +29,44 @@ namespace Model
     {
         private readonly List<Point3D> _marks = new List<Point3D>();
         private readonly List<Point3D> _centers = new List<Point3D>();
+
+#if DEBUG
+        private readonly List<Point3D> _debugs = new List<Point3D>();
+        public void AddDebugPoint(Point3D point)
+        {
+            _debugs.Add(point);
+        }
+
+        public IEnumerable<Point3D> GetDebugProjection(Axis axis, int index)
+        {
+            foreach (var mark in _debugs)
+            {
+                switch (axis)
+                {
+                    case Axis.X:
+                        if (mark.X == index)
+                        {
+                            yield return mark;
+                        }
+                        break;
+
+                    case Axis.Y:
+                        if (mark.Y == index)
+                        {
+                            yield return mark;
+                        }
+                        break;
+
+                    case Axis.Z:
+                        if (mark.Z == index)
+                        {
+                            yield return mark;
+                        }
+                        break;
+                }
+            }
+        }
+#endif
 
         public void FireUpdate()
         {
@@ -94,6 +136,9 @@ namespace Model
             _marks.Clear();
             _centers.Clear();
 
+#if DEBUG
+            _debugs.Clear();
+#endif
             FireUpdate();
         }
 
