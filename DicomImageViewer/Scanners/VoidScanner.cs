@@ -127,24 +127,25 @@ namespace DicomImageViewer.Scanners
 
                 return center;
             }
-            else
-            {
-                if (heightMap.ContainsKey(point[axis]))
-                {
-                    var mark = heightMap[point[axis]];
+            //else
+            //{
+            //    if (heightMap.ContainsKey(point[axis]))
+            //    {
+            //        var mark = heightMap[point[axis]];
 
-                    var layer = RayCasting(mark, projection, axis, fixProbe);
+            //        var layer = RayCasting(mark, projection, axis, fixProbe);
 
-                    var center = CalculateLayerCenter(layer.ToList());
-                    _labelMap.Add(layer);
+            //        var center = CalculateLayerCenter(layer.ToList());
+            //        _labelMap.Add(layer);
 
-                    _labelMap.AddCenter(mark);
+            //        _labelMap.AddCenter(mark);
 
-                    return center;
-                }
+            //        return center;
+            //    }
 
-                return point;
-            }
+            //    return point;
+            //}
+            return point;
         }
 
         private Point3D CalculateLayerCenter(IList<Point3D> layer)
