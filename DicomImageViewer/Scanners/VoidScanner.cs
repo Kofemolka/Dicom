@@ -27,6 +27,7 @@ namespace DicomImageViewer.Scanners
         public static int MaxSkip { get; set; } = 6;
         public static ushort thUp { get; set; } = 135;
         public static ushort thDown { get; set; } = 370;
+        public static int Rays = 360;
 
         public VoidScanner(IScanData scanData, ILabelMap labelMap)
         {
@@ -34,13 +35,13 @@ namespace DicomImageViewer.Scanners
             _labelMap = labelMap;
         }
 
-        public void Build(Point3D point, int rays, Axis axis)
+        public void Build(Point3D point, Axis axis)
         {
             _labelMap.Reset();
 
             var fixProbe = GetStartingProbe(point);
 
-            var heightMap = BuildHeightMap(point, rays, axis, fixProbe);
+            var heightMap = BuildHeightMap(point, axis, fixProbe);
             var maxHeight = heightMap.Keys.Max();
             var minHeight = heightMap.Keys.Min();
 
@@ -52,7 +53,7 @@ namespace DicomImageViewer.Scanners
                     [axis] = h
                 };
 
-                ScanProjection(p, axis, fixProbe, rays, heightMap);
+                ScanProjection(p, axis, fixProbe, heightMap);
             }
 
             ////go down
@@ -63,13 +64,44 @@ namespace DicomImageViewer.Scanners
                     [axis] = h
                 };
 
-                ScanProjection(p, axis, fixProbe, rays, heightMap);
+                ScanProjection(p, axis, fixProbe, heightMap);
             }
 
             _labelMap.FireUpdate();
         }
 
-        private void ScanProjection(Point3D point, Axis axis, Probe fixProbe, int rays, IDictionary<int, Point3D> heightMap)
+        public double CalculateVolume()
+        {
+            var volume = 0.0d;
+
+            foreach(var center in _labelMap.GetCenters())
+            {
+                var proj = _labelMap.GetProjection(Axis.Z, center.Z).ToList();
+                proj.Add(proj.Last());
+
+                var area = 0.0d;
+
+                for(int v=0; v<proj.Count-1; v++)
+                {
+                    var a = Math.Sqrt(Math.Pow(proj[v].X - center.X, 2) + Math.Pow(proj[v].Y - center.Y, 2));
+                    var b = Math.Sqrt(Math.Pow(proj[v+1].X - center.X, 2) + Math.Pow(proj[v+1].Y - center.Y, 2));
+                    var c = Math.Sqrt(Math.Pow(proj[v + 1].X - proj[v].X, 2) + Math.Pow(proj[v + 1].Y - proj[v].Y, 2));
+
+                    var s = (a + b + c) / 2;
+
+                    area += Math.Sqrt(s * Math.Abs(s - a) * Math.Abs(s - b) * Math.Abs(s - c));
+                }
+
+                volume += area;
+            }
+
+            double xres, yres, zres;
+            _scanData.Resolution(out xres, out yres, out zres);
+
+            return volume * xres * yres * zres;
+        }
+
+        private void ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
         {
             var projection = _scanData.GetProjection(axis, point[axis]);
 
@@ -81,7 +113,9 @@ namespace DicomImageViewer.Scanners
 
             if (fixProbe.InRange(probe))
             {
-                _labelMap.Add(RayCasting(point, projection, rays, axis, fixProbe));
+                _labelMap.Add(RayCasting(point, projection, axis, fixProbe));
+
+                _labelMap.AddCenter(point);
             }
             else
             {
@@ -89,7 +123,9 @@ namespace DicomImageViewer.Scanners
                 {
                     var mark = heightMap[point[axis]];
 
-                    _labelMap.Add(RayCasting(mark, projection, rays, axis, fixProbe));
+                    _labelMap.Add(RayCasting(mark, projection, axis, fixProbe));
+
+                    _labelMap.AddCenter(mark);
                 }
             }
         }
@@ -111,7 +147,7 @@ namespace DicomImageViewer.Scanners
             };
         }
 
-        private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, int rays, Axis axis, Probe probe)
+        private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Axis axis, Probe probe)
         {
             var res = new List<Point3D>();
             
@@ -120,9 +156,9 @@ namespace DicomImageViewer.Scanners
 
             var scalarPoint = point.To2D(axis);
 
-            var rayOffset = Math.PI * 2 / rays;
+            var rayOffset = Math.PI * 2 / Rays;
                         
-            for (int r = 0; r < rays; r++)
+            for (int r = 0; r < Rays; r++)
             {
                 var angle = r * rayOffset;
                 var p3d = Cast(scalarPoint, angle, projection, probe).To3D(axis, point[axis]);
@@ -133,7 +169,7 @@ namespace DicomImageViewer.Scanners
             return res;
         }
 
-        private IDictionary<int, Point3D> BuildHeightMap(Point3D point, int rays, Axis origianlAxis, Probe probe)
+        private IDictionary<int, Point3D> BuildHeightMap(Point3D point, Axis origianlAxis, Probe probe)
         {
             var map = new Dictionary<int, Point3D>();
 
@@ -143,7 +179,7 @@ namespace DicomImageViewer.Scanners
                 {
                     var projection = _scanData.GetProjection(axis, point[axis]);
 
-                    var marks = RayCasting(point, projection, rays, axis, probe);
+                    var marks = RayCasting(point, projection, axis, probe);
 
                     foreach (var mark in marks)
                     {

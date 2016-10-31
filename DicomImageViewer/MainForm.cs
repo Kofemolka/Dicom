@@ -62,6 +62,7 @@ namespace DicomImageViewer
             trackHiThresh.Value = VoidScanner.thUp;
             trackLowThresh.Value = VoidScanner.thDown;
             trackSkippedPixels.Value = VoidScanner.MaxSkip;
+            trackRays.Value = VoidScanner.Rays;
             
             InitUI();
         }
@@ -137,7 +138,6 @@ namespace DicomImageViewer
         
         private void bnTags_Click(object sender, EventArgs e)
         {
-            return;
             //if (imageOpened == true)
             //{
             //    List<string> str = slice.DicomInfo;
@@ -153,32 +153,17 @@ namespace DicomImageViewer
             //        MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-       private void MainForm_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             _3dView.Load();
-        }
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-
-        }
-
-        private void bnResetWL_Click(object sender, EventArgs e)
-        {
-                  
-        }
+        }              
 
         public void UpdateWindowLevel(int winWidth, int winCentre, ImageBitsPerPixel bpp)
         {
             int winMin = Convert.ToInt32(winCentre - 0.5 * winWidth);
-            int winMax = winMin + winWidth;
-            
+            int winMax = winMin + winWidth;            
         }
-
-        private void viewSettingsCheckedChanged(object sender, EventArgs e)
-        {
-            
-        }
+  
 
         private void btnOpenSeries_Click(object sender, EventArgs e)
         {
@@ -262,12 +247,6 @@ namespace DicomImageViewer
                 }
             }
         }
-
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            //imageX.
-        }
-
         
         private void trackHiThresh_ValueChanged(object sender, EventArgs e)
         {
@@ -277,11 +256,6 @@ namespace DicomImageViewer
         private void trackLowThresh_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.thDown = (ushort)trackLowThresh.Value;
-        }
-
-        private void trackRays_ValueChanged(object sender, EventArgs e)
-        {
-            
         }
 
         private void RayCast(Point3D point = null)
@@ -298,14 +272,20 @@ namespace DicomImageViewer
 
             Cursor = Cursors.WaitCursor;
             this.Enabled = false;
-
-            var rayCount = trackRays.Value;
-
+            
             Task.Factory.StartNew(() =>
             {
-                _voidScanner.Build(_lastRayCast, rayCount, Axis.Z);
+                _voidScanner.Build(_lastRayCast, Axis.Z);
+
+                var volume = _voidScanner.CalculateVolume();
+
+                return volume;
             }).ContinueWith((t) =>
             {
+                if(t != null)
+                {
+                    lbVolume.Text = "Volume: " + (int)t.Result + " (mm3)";
+                }
                 this.Enabled = true;
 
                 Cursor = Cursors.Default;
@@ -330,6 +310,11 @@ namespace DicomImageViewer
         private void btnRebuild_Click(object sender, EventArgs e)
         {
             RayCast();
+        }
+
+        private void trackRays_ValueChanged(object sender, EventArgs e)
+        {
+            VoidScanner.Rays = trackRays.Value;
         }
     }
 }

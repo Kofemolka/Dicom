@@ -14,7 +14,11 @@ namespace Model
         public double windowCentre = 0;
         public double windowWidth = 0;
         public bool signedImage = false;
-       
+
+        public double XRes { get; set; }
+        public double YRes { get; set; }
+        public double ZRes { get; set; }
+
         public List<ushort> pixels;
 
         public void GetPixels(ref List<ushort> pxs)

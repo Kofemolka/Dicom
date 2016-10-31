@@ -5,22 +5,8 @@ using System.Globalization;
 using System.Linq;
 using Model;
 
-// Program to decode a DICOM image.
-// Written by Amarnath S, Mahesh Reddy S, Bangalore, India, April 2009.
-// Updated by Harsha T, Apr 2010.
-// Updated by Amarnath S, July 2010, to include Ultrasound images of 8-bit depth, 3 
-//   samples per pixel. This was proposed by Dott. Guiseppe Marchi, www.peppedotnet.it and
-//   www.sharepointcommunity.it
-// Updated by Amarnath S, Dec 2010, to fix a bug with respect to displaying images containing 
-//   pixel values between -32768 and 32767.
-// Updated Aug 2012, to accommodate rescale-slope and rescale-intercept.
-
-// Inspired heavily by ImageJ
-
 namespace DicomImageViewer
 {
-    
-
     class DicomDecoder
     {
         const uint PIXEL_REPRESENTATION       = 0x00280103;
@@ -181,44 +167,7 @@ namespace DicomImageViewer
             }
 
             return slice;
-        }
-
-        //public string DicomFileName
-        //{
-        //    set
-        //    {
-        //        dicomFileName = value;
-        //        InitializeDicom();
-
-        //        // Thanks to CodeProject member Alphons van der Heijden for 
-        //        //   suggesting to add this - FileAccess.Read  (July 2010)
-        //        file = new BinaryReader(File.Open(dicomFileName, FileMode.Open, FileAccess.Read));
-        //        location = 0; // Reset the location
-                
-        //        try
-        //        {
-        //            bool readResult = ReadFileInfo();
-        //            if (readResult && widthTagFound && heightTagFound && pixelDataTagFound)
-        //            {
-        //                ReadPixels();
-        //                if (dicmFound == true)
-        //                    typeofDicomFile = TypeOfDicomFile.Dicom3File;
-        //                else
-        //                    typeofDicomFile = TypeOfDicomFile.DicomOldTypeFile;
-        //            }
-        //        }
-        //        catch 
-        //        {
-        //            // Nothing here
-        //        }
-        //        finally
-        //        {
-        //            file.Close();
-        //        }
-        //    }
-        //}
-
-      
+        }      
 
         String GetString(int length)
         {
@@ -558,7 +507,7 @@ namespace DicomImageViewer
         {
             double xscale = 0, yscale = 0;
             int i = scale.IndexOf('\\');
-            if (i == 1) // Aug 2012, Fixed an issue found while opening some images
+            //if (i == 1) // Aug 2012, Fixed an issue found while opening some images
             {
                 yscale = Convert.ToDouble(scale.Substring(0, i), new CultureInfo("en-US"));
                 xscale = Convert.ToDouble(scale.Substring(i + 1), new CultureInfo("en-US"));
@@ -674,12 +623,15 @@ namespace DicomImageViewer
                         String scale = GetString(elementLength);
                         GetSpatialScale(scale);
                         AddInfo(tag, scale, slice);
+                        slice.XRes = pixelWidth;
+                        slice.YRes = pixelHeight;
                         break;
                     case (int)(SLICE_THICKNESS):
                     case (int)(SLICE_SPACING):
                         String spacing = GetString(elementLength);
                         pixelDepth = Convert.ToDouble(spacing, new CultureInfo("en-US"));
                         AddInfo(tag, spacing, slice);
+                        slice.ZRes = pixelDepth;
                         break;
                     case (int)(BITS_ALLOCATED):
                         slice.bitsAllocated = GetShort();

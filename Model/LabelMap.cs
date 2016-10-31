@@ -8,9 +8,12 @@ namespace Model
     {
         void Add(Point3D point);
         void Add(IEnumerable<Point3D> points);
-        IEnumerable<Point3D> GetProjection(Axis axis, int index);
+        void AddCenter(Point3D point);
+
         void Reset();
 
+        IEnumerable<Point3D> GetProjection(Axis axis, int index);
+        IEnumerable<Point3D> GetCenters();
         IEnumerable<Point3D> GetAll();
 
         void FireUpdate();
@@ -21,6 +24,7 @@ namespace Model
     public class LabelMap : ILabelMap
     {
         private readonly List<Point3D> _marks = new List<Point3D>();
+        private readonly List<Point3D> _centers = new List<Point3D>();
 
         public void FireUpdate()
         {
@@ -35,6 +39,11 @@ namespace Model
         public void Add(IEnumerable<Point3D> points)
         {
             _marks.AddRange(points);
+        }
+
+        public void AddCenter(Point3D point)
+        {
+            _centers.Add(point);
         }
 
         public IEnumerable<Point3D> GetProjection(Axis axis, int index)
@@ -75,9 +84,15 @@ namespace Model
             }
         }
 
+        public IEnumerable<Point3D> GetCenters()
+        {
+            return _centers;
+        }
+
         public void Reset()
         {
             _marks.Clear();
+            _centers.Clear();
 
             FireUpdate();
         }

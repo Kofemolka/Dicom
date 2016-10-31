@@ -12,6 +12,7 @@ namespace Model
         Projection GetProjection(Axis axis, int index);
         int GetAxisCutCount(Axis axis);
         void MinMaxDencity(out int min, out int max);
+        void Resolution(out double X, out double Y, out double Z);
 
         event DataUpdatedEvent DataUpdated;
     }
@@ -40,6 +41,13 @@ namespace Model
         {
             min = _minDens;
             max = _maxDens;
+        }
+
+        public void Resolution(out double X, out double Y, out double Z)
+        {
+            X = XRes;
+            Y = YRes;
+            Z = ZRes;
         }
 
         public Projection GetProjection(Axis axis, int index)
@@ -186,6 +194,10 @@ namespace Model
             windowCentre = slice.windowCentre;
             windowWidth = slice.windowWidth;
             signedImage = slice.signedImage;
+
+            XRes = slice.XRes;
+            YRes = slice.YRes;
+            ZRes = slice.ZRes;
         }
 
         private ushort[,,] Pixels;
@@ -193,6 +205,10 @@ namespace Model
         public int XSize { get; private set; }
         public int YSize { get; private set; }
         public int ZSize { get; private set; }
+
+        private double XRes { get; set; }
+        private double YRes { get; set; }
+        private double ZRes { get; set; }
 
         public TypeOfDicomFile typeOfDicomFile { get; private set; }
         public int SamplesPerPixel { get; private set; }
