@@ -35,9 +35,7 @@ namespace Model
 
 #if DEBUG
         private readonly List<Point3D> _debugs = new List<Point3D>();
-
-        public System.Drawing.Color Color { get; set; } 
-
+        
         public void AddDebugPoint(Point3D point)
         {
             lock (_debugs)
@@ -76,6 +74,7 @@ namespace Model
             }
         }
 #endif
+        public System.Drawing.Color Color { get; set; }
 
         public void FireUpdate()
         {
