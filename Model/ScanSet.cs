@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Model.Utils;
@@ -162,29 +164,41 @@ namespace Model
             _minDens = ushort.MaxValue;
             _maxDens = ushort.MinValue;
 
-            for (int z = 0; z < ZSize; z++)
+            var minDenses = new ConcurrentBag<ushort>();
+            var maxDenses = new ConcurrentBag<ushort>();
+
+            Parallel.ForEach(_slices, (slice, state, z) =>
             {
+                var minDens = ushort.MaxValue;
+                var maxDens = ushort.MinValue;
+
                 for (int x = 0; x < XSize; x++)
                 {
                     for (int y = 0; y < YSize; y++)
                     {
-                        Pixels[z, x, y] = _slices[z].pixels.ElementAt(x*XSize + y);
+                        Pixels[z, x, y] = _slices[(int) z].pixels.ElementAt(x*XSize + y);
 
-                        if (Pixels[z, x, y] > _maxDens)
+                        if (Pixels[z, x, y] > maxDens)
                         {
-                            _maxDens = Pixels[z, x, y];
+                            maxDens = Pixels[z, x, y];
                         }
 
-                        if (Pixels[z, x, y] < _minDens)
+                        if (Pixels[z, x, y] < minDens)
                         {
-                            _minDens = Pixels[z, x, y];
+                            minDens = Pixels[z, x, y];
                         }
                     }
                 }
 
-                progress.Tick();
-            }
+                minDenses.Add(minDens);
+                maxDenses.Add(maxDens);
 
+                progress.Tick();
+            });
+            
+            _minDens = minDenses.Min();
+            _maxDens = maxDenses.Max();
+            
             _dicomInfo.Clear();
             _dicomInfo.AddRange(_slices.First().DicomInfo);
 

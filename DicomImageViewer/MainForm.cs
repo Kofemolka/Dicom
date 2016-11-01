@@ -241,11 +241,13 @@ namespace DicomImageViewer
         private void trackHiThresh_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.thUp = (ushort)trackHiThresh.Value;
+            lbHiThresh.Text = "HI threshold: " + VoidScanner.thUp;
         }
 
         private void trackLowThresh_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.thDown = (ushort)trackLowThresh.Value;
+            lbLowThresh.Text = "LOW threshold: " + VoidScanner.thDown;
         }
 
         private void RayCast(Point3D point = null)
@@ -265,7 +267,7 @@ namespace DicomImageViewer
             
             Task.Factory.StartNew(() =>
             {
-                _voidScanner.Build(_lastRayCast, Axis.Z);
+                _voidScanner.Build(_lastRayCast, Axis.Z, new Progress(progBar));
 
                 var volume = _voidScanner.CalculateVolume();
 
@@ -285,6 +287,7 @@ namespace DicomImageViewer
         private void trackSkippedPixels_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.MaxSkip = trackSkippedPixels.Value;
+            lbHunger.Text = "Hunger: " + VoidScanner.MaxSkip;
         }
 
         public void Dencity(ushort density)
@@ -305,6 +308,12 @@ namespace DicomImageViewer
         private void trackRays_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.Rays = trackRays.Value;
+            lbRays.Text = "Rays: " + trackRays.Value;
+        }
+
+        private void lbHiThresh_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

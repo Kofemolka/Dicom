@@ -53,6 +53,7 @@
     <Compile Include="TypeOfDicomFile.cs" />
     <Compile Include="Utils\IProbe.cs" />
     <Compile Include="Utils\IProgress.cs" />
+    <Compile Include="Utils\ParallelExecutor.cs" />
     <Compile Include="Utils\Progress.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

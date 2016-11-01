@@ -34,7 +34,10 @@ namespace Model
         private readonly List<Point3D> _debugs = new List<Point3D>();
         public void AddDebugPoint(Point3D point)
         {
-            _debugs.Add(point);
+            lock (_debugs)
+            {
+                _debugs.Add(point);
+            }
         }
 
         public IEnumerable<Point3D> GetDebugProjection(Axis axis, int index)
@@ -75,17 +78,26 @@ namespace Model
 
         public void Add(Point3D point)
         {
-            _marks.Add(point);
+            lock (_marks)
+            {
+                _marks.Add(point);
+            }
         }
 
         public void Add(IEnumerable<Point3D> points)
         {
-            _marks.AddRange(points);
+            lock (_marks)
+            {
+                _marks.AddRange(points);
+            }
         }
 
         public void AddCenter(Point3D point)
         {
-            _centers.Add(point);
+            lock (_centers)
+            {
+                _centers.Add(point);
+            }
         }
 
         public IEnumerable<Point3D> GetProjection(Axis axis, int index)

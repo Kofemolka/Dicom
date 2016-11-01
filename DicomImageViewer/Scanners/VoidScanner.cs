@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Model;
+using Model.Utils;
 
 namespace DicomImageViewer.Scanners
 {
@@ -32,7 +36,7 @@ namespace DicomImageViewer.Scanners
             _labelMap = labelMap;
         }
 
-        public void Build(Point3D point, Axis axis)
+        public void Build(Point3D point, Axis axis, IProgress progress)
         {
             _labelMap.Reset();
 
@@ -42,58 +46,81 @@ namespace DicomImageViewer.Scanners
             var maxHeight = heightMap.Keys.Max();
             var minHeight = heightMap.Keys.Min();
 
-            Point3D center = point;
-            //go up
-            for (var h = point[axis]; h <= maxHeight; h++)
+            progress.Min(1);
+            progress.Max(maxHeight - minHeight);
+            progress.Reset();
+
+            var tasks = new List<Task>();
+            tasks.Add(Task.Factory.StartNew(() =>
             {
-                var p = new Point3D(center)
+                Point3D center = point;
+
+                //go up
+                for (var h = point[axis]; h <= maxHeight; h++)
                 {
-                    [axis] = h
-                };
+                    var p = new Point3D(center)
+                    {
+                        [axis] = h
+                    };
 
-                center = ScanProjection(p, axis, fixProbe, heightMap);
-            }
+                    center = ScanProjection(p, axis, fixProbe, heightMap);
 
-            center = point;
+                    progress.Tick();
+                }
+            }));
 
-            ////go down
-            for (var h = point[axis] - 1; h >= minHeight; h--)
+
+            tasks.Add(Task.Factory.StartNew(() =>
             {
-                var p = new Point3D(center)
+                Point3D center = point;
+
+                ////go down
+                for (var h = point[axis] - 1; h >= minHeight; h--)
                 {
-                    [axis] = h
-                };
+                    var p = new Point3D(center)
+                    {
+                        [axis] = h
+                    };
 
-                center = ScanProjection(p, axis, fixProbe, heightMap);
-            }
+                    center = ScanProjection(p, axis, fixProbe, heightMap);
 
+                    progress.Tick();
+                }
+            }));
+
+            Task.WaitAll(tasks.ToArray());
+           
             _labelMap.FireUpdate();
         }
 
         public double CalculateVolume()
         {
             var volume = 0.0d;
+            var guard = new object();
 
-            foreach(var center in _labelMap.GetCenters())
+            Parallel.ForEach(_labelMap.GetCenters(), d =>
             {
-                var proj = _labelMap.GetProjection(Axis.Z, center.Z).ToList();
+                var proj = _labelMap.GetProjection(Axis.Z, d.Z).ToList();
                 proj.Add(proj.Last());
 
                 var area = 0.0d;
 
-                for(int v=0; v<proj.Count-1; v++)
+                for (int v = 0; v < proj.Count - 1; v++)
                 {
-                    var a = Math.Sqrt(Math.Pow(proj[v].X - center.X, 2) + Math.Pow(proj[v].Y - center.Y, 2));
-                    var b = Math.Sqrt(Math.Pow(proj[v+1].X - center.X, 2) + Math.Pow(proj[v+1].Y - center.Y, 2));
+                    var a = Math.Sqrt(Math.Pow(proj[v].X - d.X, 2) + Math.Pow(proj[v].Y - d.Y, 2));
+                    var b = Math.Sqrt(Math.Pow(proj[v + 1].X - d.X, 2) + Math.Pow(proj[v + 1].Y - d.Y, 2));
                     var c = Math.Sqrt(Math.Pow(proj[v + 1].X - proj[v].X, 2) + Math.Pow(proj[v + 1].Y - proj[v].Y, 2));
 
-                    var s = (a + b + c) / 2;
+                    var s = (a + b + c)/2;
 
-                    area += Math.Sqrt(s * Math.Abs(s - a) * Math.Abs(s - b) * Math.Abs(s - c));
+                    area += Math.Sqrt(s*Math.Abs(s - a)*Math.Abs(s - b)*Math.Abs(s - c));
                 }
 
-                volume += area;
-            }
+                lock (guard)
+                {
+                    volume += area;
+                }
+            });
 
             double xres, yres, zres;
             _scanData.Resolution(out xres, out yres, out zres);
@@ -117,8 +144,9 @@ namespace DicomImageViewer.Scanners
             if (fixProbe.InRange(probe))
             {
                 var layer = RayCasting(point, projection, axis, fixProbe);
-                var center = CalculateLayerCenter(layer.ToList());
-                _labelMap.Add(layer);
+                var point3Ds = layer as Point3D[] ?? layer.ToArray();
+                var center = CalculateLayerCenter(point3Ds.ToList());
+                _labelMap.Add(point3Ds);
 
                 _labelMap.AddCenter(point);
 

@@ -45,7 +45,11 @@ namespace DicomImageViewer
             this.lbDensity = new System.Windows.Forms.Label();
             this.btnRebuild = new System.Windows.Forms.Button();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.lbLowThresh = new System.Windows.Forms.Label();
+            this.lbHiThresh = new System.Windows.Forms.Label();
+            this.lbRays = new System.Windows.Forms.Label();
             this.lbVolume = new System.Windows.Forms.Label();
+            this.lbHunger = new System.Windows.Forms.Label();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackRays)).BeginInit();
@@ -138,26 +142,29 @@ namespace DicomImageViewer
             // 
             // progBar
             // 
-            this.progBar.Location = new System.Drawing.Point(11, 525);
+            this.progBar.Location = new System.Drawing.Point(11, 110);
             this.progBar.Name = "progBar";
             this.progBar.Size = new System.Drawing.Size(176, 23);
             this.progBar.TabIndex = 12;
             // 
             // trackRays
             // 
-            this.trackRays.Location = new System.Drawing.Point(3, 554);
-            this.trackRays.Maximum = 360;
-            this.trackRays.Minimum = 4;
+            this.trackRays.LargeChange = 16;
+            this.trackRays.Location = new System.Drawing.Point(5, 198);
+            this.trackRays.Maximum = 720;
+            this.trackRays.Minimum = 16;
             this.trackRays.Name = "trackRays";
             this.trackRays.Size = new System.Drawing.Size(184, 45);
+            this.trackRays.SmallChange = 16;
             this.trackRays.TabIndex = 13;
+            this.trackRays.TickFrequency = 16;
             this.trackRays.Value = 120;
             this.trackRays.ValueChanged += new System.EventHandler(this.trackRays_ValueChanged);
             // 
             // trackLowThresh
             // 
             this.trackLowThresh.LargeChange = 20;
-            this.trackLowThresh.Location = new System.Drawing.Point(3, 656);
+            this.trackLowThresh.Location = new System.Drawing.Point(5, 326);
             this.trackLowThresh.Maximum = 1000;
             this.trackLowThresh.Name = "trackLowThresh";
             this.trackLowThresh.Size = new System.Drawing.Size(184, 45);
@@ -168,7 +175,7 @@ namespace DicomImageViewer
             // trackHiThresh
             // 
             this.trackHiThresh.LargeChange = 20;
-            this.trackHiThresh.Location = new System.Drawing.Point(3, 605);
+            this.trackHiThresh.Location = new System.Drawing.Point(5, 262);
             this.trackHiThresh.Maximum = 1000;
             this.trackHiThresh.Name = "trackHiThresh";
             this.trackHiThresh.Size = new System.Drawing.Size(184, 45);
@@ -179,7 +186,7 @@ namespace DicomImageViewer
             // trackSkippedPixels
             // 
             this.trackSkippedPixels.LargeChange = 20;
-            this.trackSkippedPixels.Location = new System.Drawing.Point(3, 707);
+            this.trackSkippedPixels.Location = new System.Drawing.Point(5, 390);
             this.trackSkippedPixels.Name = "trackSkippedPixels";
             this.trackSkippedPixels.Size = new System.Drawing.Size(184, 45);
             this.trackSkippedPixels.TabIndex = 16;
@@ -196,7 +203,7 @@ namespace DicomImageViewer
             // 
             // btnRebuild
             // 
-            this.btnRebuild.Location = new System.Drawing.Point(11, 490);
+            this.btnRebuild.Location = new System.Drawing.Point(11, 139);
             this.btnRebuild.Name = "btnRebuild";
             this.btnRebuild.Size = new System.Drawing.Size(176, 29);
             this.btnRebuild.TabIndex = 18;
@@ -207,6 +214,10 @@ namespace DicomImageViewer
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.lbHunger);
+            this.panel1.Controls.Add(this.lbLowThresh);
+            this.panel1.Controls.Add(this.lbHiThresh);
+            this.panel1.Controls.Add(this.lbRays);
             this.panel1.Controls.Add(this.lbVolume);
             this.panel1.Controls.Add(this.lbDensity);
             this.panel1.Controls.Add(this.btnRebuild);
@@ -223,6 +234,34 @@ namespace DicomImageViewer
             this.panel1.Size = new System.Drawing.Size(194, 763);
             this.panel1.TabIndex = 18;
             // 
+            // lbLowThresh
+            // 
+            this.lbLowThresh.AutoSize = true;
+            this.lbLowThresh.Location = new System.Drawing.Point(8, 310);
+            this.lbLowThresh.Name = "lbLowThresh";
+            this.lbLowThresh.Size = new System.Drawing.Size(81, 13);
+            this.lbLowThresh.TabIndex = 22;
+            this.lbLowThresh.Text = "LOW threshold:";
+            // 
+            // lbHiThresh
+            // 
+            this.lbHiThresh.AutoSize = true;
+            this.lbHiThresh.Location = new System.Drawing.Point(8, 246);
+            this.lbHiThresh.Name = "lbHiThresh";
+            this.lbHiThresh.Size = new System.Drawing.Size(67, 13);
+            this.lbHiThresh.TabIndex = 21;
+            this.lbHiThresh.Text = "HI threshold:";
+            this.lbHiThresh.Click += new System.EventHandler(this.lbHiThresh_Click);
+            // 
+            // lbRays
+            // 
+            this.lbRays.AutoSize = true;
+            this.lbRays.Location = new System.Drawing.Point(8, 182);
+            this.lbRays.Name = "lbRays";
+            this.lbRays.Size = new System.Drawing.Size(34, 13);
+            this.lbRays.TabIndex = 20;
+            this.lbRays.Text = "Rays:";
+            // 
             // lbVolume
             // 
             this.lbVolume.AutoSize = true;
@@ -231,6 +270,15 @@ namespace DicomImageViewer
             this.lbVolume.Size = new System.Drawing.Size(45, 13);
             this.lbVolume.TabIndex = 19;
             this.lbVolume.Text = "Volume:";
+            // 
+            // lbHunger
+            // 
+            this.lbHunger.AutoSize = true;
+            this.lbHunger.Location = new System.Drawing.Point(8, 374);
+            this.lbHunger.Name = "lbHunger";
+            this.lbHunger.Size = new System.Drawing.Size(45, 13);
+            this.lbHunger.TabIndex = 23;
+            this.lbHunger.Text = "Hunger:";
             // 
             // MainForm
             // 
@@ -275,6 +323,10 @@ namespace DicomImageViewer
 
         private System.Windows.Forms.Button btnRebuild;
         private System.Windows.Forms.Label lbVolume;
+        private System.Windows.Forms.Label lbRays;
+        private System.Windows.Forms.Label lbHiThresh;
+        private System.Windows.Forms.Label lbLowThresh;
+        private System.Windows.Forms.Label lbHunger;
     }
 }
 
