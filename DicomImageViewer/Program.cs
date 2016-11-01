@@ -1,7 +1,4 @@
-﻿using SlimDX.Windows;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Windows.Forms;
 
 namespace DicomImageViewer
@@ -18,9 +15,6 @@ namespace DicomImageViewer
             Application.SetCompatibleTextRenderingDefault(false);
 
             Application.Run(new MainForm());
-
-            //var mainForm = new MainForm();
-            //MessagePump.Run(mainForm, mainForm.View3D.RenderFrame);
         }
     }
 }

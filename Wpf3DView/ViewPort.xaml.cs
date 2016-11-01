@@ -216,8 +216,8 @@ namespace Wpf3DView
                 BuildSurface(geo, hashPoint, zOrderCloud[keys[z]], zOrderCloud[keys[z+1]]);
             }
 
-            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[0]]);
-            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[keys.Length-1]]);
+            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[0]], true);
+            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[keys.Length-1]], false);
 
             foreach (var source in hashPoint.OrderBy(pair => pair.Value))
             {
@@ -280,7 +280,7 @@ namespace Wpf3DView
             geo.TriangleIndices.Add(ndx3);
         }
 
-        private void BuildEndPlanes(MeshGeometry3D geo, Dictionary<Model.Point3D, int> hashPoint, List<Model.Point3D> points)
+        private void BuildEndPlanes(MeshGeometry3D geo, Dictionary<Model.Point3D, int> hashPoint, List<Model.Point3D> points, bool counter)
         {
             if (points.Count < 3)
                 return;
@@ -297,17 +297,28 @@ namespace Wpf3DView
                 center.Z += point3D.Z;
             }
 
+            ndx.Add(AddPoint(hashPoint, points.First()));
+
             center.X /= points.Count;
             center.Y /= points.Count;
             center.Z /= points.Count;
 
             var centerNdx = AddPoint(hashPoint, center);
 
-            for (var i = 0; i < points.Count - 1; i++)
+            for (var i = 0; i < points.Count; i++)
             {
-                geo.TriangleIndices.Add(ndx[i + 1]);
-                geo.TriangleIndices.Add(ndx[i]);
-                geo.TriangleIndices.Add(centerNdx);
+                if (counter)
+                {
+                    geo.TriangleIndices.Add(ndx[i + 1]);
+                    geo.TriangleIndices.Add(ndx[i]);
+                    geo.TriangleIndices.Add(centerNdx);
+                }
+                else
+                {
+                    geo.TriangleIndices.Add(centerNdx);
+                    geo.TriangleIndices.Add(ndx[i]);
+                    geo.TriangleIndices.Add(ndx[i + 1]);
+                }
             }
         }
 
