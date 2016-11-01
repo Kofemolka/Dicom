@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Model
 {
@@ -6,6 +7,8 @@ namespace Model
 
     public interface ILabelMap
     {
+        System.Drawing.Color Color { get; set; }
+
 #if DEBUG
         void AddDebugPoint(Point3D point);
         IEnumerable<Point3D> GetDebugProjection(Axis axis, int index);
@@ -32,6 +35,9 @@ namespace Model
 
 #if DEBUG
         private readonly List<Point3D> _debugs = new List<Point3D>();
+
+        public System.Drawing.Color Color { get; set; } 
+
         public void AddDebugPoint(Point3D point)
         {
             lock (_debugs)

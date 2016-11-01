@@ -1,38 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Media.Media3D;
-using System.Windows.Media.Animation;
 
 namespace Wpf3DView
 {    
     public partial class ViewPort : UserControl
     {
         private Trackball _trackball;
-        private readonly GeometryModel3D _geoModel;
-        private PerspectiveCamera _camera;
-        public Trackball Trackball => _trackball;
+        private readonly Model3DGroup _modelGroup = new Model3DGroup();
+        private readonly ModelVisual3D _modelsVisual = new ModelVisual3D();
+        private PerspectiveCamera _camera;        
 
         private readonly ScaleTransform3D _scaleTransform3D = new ScaleTransform3D(1, 1, 1);
         private readonly RotateTransform3D _rotateTransform3D = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0));
         private readonly TranslateTransform3D _translateTransform3D = new TranslateTransform3D(0, 0, 0);
 
+        public Trackball Trackball => _trackball;
+
         public ViewPort()
         {
-            InitializeComponent();
-
-            _geoModel = new GeometryModel3D();
+            InitializeComponent();          
 
             InitScene();
 
@@ -42,74 +31,99 @@ namespace Wpf3DView
             _trackball.Enabled = true;            
         }
 
-        public void SetModel(IEnumerable<Model.Point3D> points)
+        public void Reset()
         {
-            Point3D center;
-            var geo = BuildMesh(points, out center);
+            _modelGroup.Children.Clear();
 
-            geo.Freeze();           
+            DirectionalLight DirLight1 = new DirectionalLight();
+            DirLight1.Color = Colors.White;
+            DirLight1.Direction = new Vector3D(-1, -1, -1);
 
-            _geoModel.Geometry = geo;
+            DirectionalLight DirLight2 = new DirectionalLight();
+            DirLight2.Color = Colors.White;
+            DirLight2.Direction = new Vector3D(1, 1, 1);
+
+            _modelGroup.Children.Add(DirLight1);
+            _modelGroup.Children.Add(DirLight2);
+        }
+
+        public void AddModel(IEnumerable<Model.Point3D> points, Color color)
+        {
+            //Point3D center;
+            var geo = BuildMesh(points);
             
+            var model = new GeometryModel3D();
+            model.Material = new DiffuseMaterial(new SolidColorBrush(color));
+
+            model.Geometry = geo;
+            _modelGroup.Children.Add(model);
+
+            var center = CalculateCenter();
+
             _scaleTransform3D.CenterX = _rotateTransform3D.CenterX = center.X;
             _scaleTransform3D.CenterY = _rotateTransform3D.CenterY = center.Y;
             _scaleTransform3D.CenterZ = _rotateTransform3D.CenterZ = center.Z;
 
             _camera.LookDirection = new Vector3D(center.X, center.Y, center.Z);
             _camera.UpDirection = new Vector3D(0, 0, 1);
-
+                        
+           
             myViewport.UpdateLayout();
         }        
 
+        private Point3D CalculateCenter()
+        {
+            var center = new Point3D();
+            long counter = 0;
+
+            foreach (var model in _modelGroup.Children)
+            {
+                if (model is GeometryModel3D)
+                {
+                    foreach (var p in ((model as GeometryModel3D).Geometry as MeshGeometry3D).Positions)
+                    {
+                        center.X += p.X;
+                        center.Y += p.Y;
+                        center.Z += p.Z;
+
+                        counter++;
+                    }
+                }
+            }
+
+            if(counter > 0)
+            {
+                center.X /= counter;
+                center.Y /= counter;
+                center.Z /= counter;
+            }
+
+            return center;
+        }
+
         private void InitScene()
-        {                        
-            _geoModel.Material = new DiffuseMaterial(
-                      new SolidColorBrush(Colors.Red));
+        {
+            Reset();
 
-            AmbientLight ambient_light = new AmbientLight(Colors.LightGray);
-
-            DirectionalLight DirLight1 =
-                                new DirectionalLight();
-            
-            DirLight1.Color = Colors.White;
-            DirLight1.Direction =
-                              new Vector3D(-1, -1, -1);
-
-            DirectionalLight DirLight2 =
-                                new DirectionalLight();
-            DirLight2.Color = Colors.White;
-            DirLight2.Direction =
-                              new Vector3D(1, 1, 1);
-
-            _camera =
-                               new PerspectiveCamera();
+            _camera = new PerspectiveCamera();
             _camera.FarPlaneDistance = 1000;
             _camera.NearPlaneDistance = 10;
             _camera.FieldOfView = 60;
             _camera.Position = new Point3D(0, 0, 0);
-            _camera.LookDirection =
-                              new Vector3D(-2, -2, -3);
-            _camera.UpDirection =
-                                 new Vector3D(0, 1, 0);
-
-            Model3DGroup modelGroup =
-                                    new Model3DGroup();
-            modelGroup.Children.Add(_geoModel);
-            modelGroup.Children.Add(DirLight1);
-            modelGroup.Children.Add(DirLight2);
-            ModelVisual3D modelsVisual =
-                                   new ModelVisual3D();
-            modelsVisual.Content = modelGroup;
-
+            _camera.LookDirection = new Vector3D(-2, -2, -3);
+            _camera.UpDirection = new Vector3D(0, 1, 0);
+            
+            _modelsVisual.Content = _modelGroup;
+            
             Transform3DGroup t = new Transform3DGroup();
             t.Children.Add(_scaleTransform3D);
             t.Children.Add(_rotateTransform3D);
             t.Children.Add(_translateTransform3D);
 
-            modelsVisual.Transform = t;
+            _modelsVisual.Transform = t;
 
-            myViewport.Camera = _camera;
-            myViewport.Children.Add(modelsVisual);
+            myViewport.Camera = _camera;            
+            myViewport.Children.Add(_modelsVisual);
             myViewport.Height = this.Width;
             myViewport.Width = this.Height;
             Canvas.SetTop(myViewport, 0);
@@ -183,7 +197,7 @@ namespace Wpf3DView
             }
         }
 
-        private MeshGeometry3D BuildMesh(IEnumerable<Model.Point3D> pointCloud, out Point3D center)
+        private MeshGeometry3D BuildMesh(IEnumerable<Model.Point3D> pointCloud)
         {
             var zOrderCloud = new Dictionary<int, List<Model.Point3D>>();
 
@@ -202,8 +216,7 @@ namespace Wpf3DView
             MeshGeometry3D geo = new MeshGeometry3D();
 
             if (!zOrderCloud.Any())
-            {
-                center = new Point3D();
+            {               
                 return geo;
             }
 
@@ -223,18 +236,7 @@ namespace Wpf3DView
             {
                 geo.Positions.Add(new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
             }
-
-            var c = CalculateCenter(zOrderCloud[keys[0]], zOrderCloud[keys[keys.Length - 1]]);
-            center = new Point3D(c.X, c.Y, c.Z);
-
-            //foreach (var value in zOrderCloud.Values)
-            //{
-            //    foreach (var point3D in value)
-            //    {
-            //        AddCubeToMesh(geo, new Point3D(point3D.X, point3D.Y, point3D.Z), 1);
-            //    }
-            //}
-
+            
             return geo;
         }
 

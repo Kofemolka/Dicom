@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Axis.cs" />
     <Compile Include="LabelMap.cs" />
+    <Compile Include="LabelMapSet.cs" />
     <Compile Include="LookupTable.cs" />
     <Compile Include="Point2D.cs" />
     <Compile Include="Point3D.cs" />

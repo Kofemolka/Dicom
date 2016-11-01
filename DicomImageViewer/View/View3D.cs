@@ -4,22 +4,19 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using System.IO;
-using System.Linq;
-using System.Windows.Media.Media3D;
 using Model;
-using P3D = System.Windows.Media.Media3D.Point3D;
 using Point3D = Model.Point3D;
 
 namespace DicomImageViewer.View
 {
     public partial class View3D : UserControl
     {
-        private readonly ILabelMap _labelMap;
+        private readonly LabelMapSet _labelMapSet;
         private readonly Wpf3DView.ViewPort _viewPort;
 
-        public View3D(ILabelMap labelMap)
+        public View3D(LabelMapSet labelMapSet)
         {
-            _labelMap = labelMap;
+            _labelMapSet = labelMapSet;
 
             InitializeComponent();
 
@@ -31,16 +28,27 @@ namespace DicomImageViewer.View
 
             host.HostContainer.MouseEnter += (a, b) => _viewPort.Focus();
 
-            labelMap.LabelDataChanged += BuildModel;            
+            _labelMapSet.LabelDataChanged += BuildModel;            
         }
 
         private void BuildModel()
         {
             try
             {
-                this.Invoke(new MethodInvoker(() => _viewPort.SetModel(_labelMap.GetAll())));
+                Invoke(new MethodInvoker(() => _viewPort.Reset()));
 
-                Save(_labelMap.GetAll());
+                foreach (var label in _labelMapSet.GetAll())
+                {
+                    Invoke(new MethodInvoker(() => _viewPort.AddModel(label.GetAll(), new System.Windows.Media.Color()
+                    {
+                        A = label.Color.A,
+                        R = label.Color.R,
+                        G = label.Color.G,
+                        B = label.Color.B
+                    })));
+                }
+
+                //Save(_labelMap.GetAll());
             }
             catch (Exception e)
             {
@@ -85,7 +93,7 @@ namespace DicomImageViewer.View
 
                 file.Close();
 
-               this.Invoke(new MethodInvoker(() => _viewPort.SetModel(points)));
+               //this.Invoke(new MethodInvoker(() => _viewPort.SetModel(points)));
             }catch(Exception e)
             {
 

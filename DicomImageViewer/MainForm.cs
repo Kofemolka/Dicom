@@ -24,7 +24,7 @@ namespace DicomImageViewer
 
         private readonly ScanSet _scanSet = new ScanSet();
         private readonly ILookupTable _lookupTable;
-        private readonly LabelMap _labelMap = new LabelMap();
+        private readonly LabelMapSet _labelMapSet = new LabelMapSet();
         private readonly VoidScanner _voidScanner;
 
         private readonly DicomDecoder _dd;
@@ -44,17 +44,19 @@ namespace DicomImageViewer
         public MainForm()
         {
             _lookupTable = new LookupTable(_scanSet);
-            _voidScanner = new VoidScanner(_scanSet, _labelMap);
+            _voidScanner = new VoidScanner(_scanSet, _labelMapSet.Current);
 
             InitializeComponent();
+            labelMapView.LabelMapSet = _labelMapSet;
+
             _dd = new DicomDecoder();
 
-            _3dView = new View.View3D(_labelMap);
+            _3dView = new View.View3D(_labelMapSet);
             _3dView.Dock = DockStyle.Fill;
 
-            projectionViewX = new ProjectionView(Axis.X, _scanSet, _lookupTable, _labelMap, this);
-            projectionViewY = new ProjectionView(Axis.Y, _scanSet, _lookupTable, _labelMap, this);
-            projectionViewZ = new ProjectionView(Axis.Z, _scanSet, _lookupTable, _labelMap, this);           
+            projectionViewX = new ProjectionView(Axis.X, _scanSet, _lookupTable, _labelMapSet, this);
+            projectionViewY = new ProjectionView(Axis.Y, _scanSet, _lookupTable, _labelMapSet, this);
+            projectionViewZ = new ProjectionView(Axis.Z, _scanSet, _lookupTable, _labelMapSet, this);           
 
             maxPixelValue = 0;
             minPixelValue = 65535;
@@ -116,9 +118,7 @@ namespace DicomImageViewer
             Text = "DICOM Image Viewer: ";
 
             _scanSet.MinMaxDencity(out minPixelValue, out maxPixelValue);
-
-            // Bug fix dated 24 Aug 2013 - for proper window/level of signed images
-            // Thanks to Matias Montroull from Argentina for pointing this out.
+          
             if (_scanSet.signedImage)
             {
                 winCentre -= short.MinValue;
@@ -177,6 +177,8 @@ namespace DicomImageViewer
                         LoadSlicesAsync(files, progIndicator);
 
                         _scanSet.Build(progIndicator);
+
+                        _labelMapSet.Reset();
                     }).ContinueWith((t) =>
                     {
                         this.Enabled = true;

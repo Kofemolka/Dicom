@@ -121,6 +121,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="View\LabelMapView.resx">
+      <DependentUpon>LabelMapView.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\View3D.resx">
       <DependentUpon>View3D.cs</DependentUpon>
     </EmbeddedResource>
@@ -143,6 +146,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Scanners\VoidScanner.cs" />
+    <Compile Include="View\LabelMapView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\LabelMapView.Designer.cs">
+      <DependentUpon>LabelMapView.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\View3D.cs">
       <SubType>UserControl</SubType>
     </Compile>

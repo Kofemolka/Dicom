@@ -12,7 +12,7 @@ namespace DicomImageViewer.Scanners
     class VoidScanner
     {
         private readonly IScanData _scanData;
-        private readonly ILabelMap _labelMap;
+        private readonly Func<ILabelMap> _labelMap;
 
         class Probe
         {
@@ -30,7 +30,7 @@ namespace DicomImageViewer.Scanners
         public static ushort thDown { get; set; } = 370;
         public static int Rays = 360;
 
-        public VoidScanner(IScanData scanData, ILabelMap labelMap)
+        public VoidScanner(IScanData scanData, Func<ILabelMap> labelMap)
         {
             _scanData = scanData;
             _labelMap = labelMap;
@@ -38,7 +38,7 @@ namespace DicomImageViewer.Scanners
 
         public void Build(Point3D point, Axis axis, IProgress progress)
         {
-            _labelMap.Reset();
+            _labelMap().Reset();
 
             var fixProbe = GetStartingProbe(point);
 
@@ -90,7 +90,7 @@ namespace DicomImageViewer.Scanners
 
             Task.WaitAll(tasks.ToArray());
            
-            _labelMap.FireUpdate();
+            _labelMap().FireUpdate();
         }
 
         public double CalculateVolume()
@@ -98,9 +98,9 @@ namespace DicomImageViewer.Scanners
             var volume = 0.0d;
             var guard = new object();
 
-            Parallel.ForEach(_labelMap.GetCenters(), d =>
+            Parallel.ForEach(_labelMap().GetCenters(), d =>
             {
-                var proj = _labelMap.GetProjection(Axis.Z, d.Z).ToList();
+                var proj = _labelMap().GetProjection(Axis.Z, d.Z).ToList();
                 proj.Add(proj.Last());
 
                 var area = 0.0d;
@@ -131,7 +131,7 @@ namespace DicomImageViewer.Scanners
         private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
         {
 #if DEBUG
-            _labelMap.AddDebugPoint(point);
+            _labelMap().AddDebugPoint(point);
 #endif
             var projection = _scanData.GetProjection(axis, point[axis]);
 
@@ -146,9 +146,9 @@ namespace DicomImageViewer.Scanners
                 var layer = RayCasting(point, projection, axis, fixProbe);
                 var point3Ds = layer as Point3D[] ?? layer.ToArray();
                 var center = CalculateLayerCenter(point3Ds.ToList());
-                _labelMap.Add(point3Ds);
+                _labelMap().Add(point3Ds);
 
-                _labelMap.AddCenter(point);
+                _labelMap().AddCenter(point);
 
                 return center;
             }

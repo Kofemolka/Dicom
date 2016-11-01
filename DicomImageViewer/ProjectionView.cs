@@ -12,23 +12,23 @@ namespace DicomImageViewer
         private readonly Axis _axis;
         private readonly IScanData _scanData;
         private readonly ILookupTable _lookupTable;
-        private readonly ILabelMap _labelMap;
+        private readonly LabelMapSet _labelMapSet;
         private readonly IProbe _probe;
         private Projection _projection;
         private int CurrentCutIndex => trackCut.Value;
 
         private Bitmap _bmp;
 
-        public ProjectionView(Axis axis, IScanData scanData, ILookupTable lookupTable, ILabelMap labelMap, IProbe probe)
+        public ProjectionView(Axis axis, IScanData scanData, ILookupTable lookupTable, LabelMapSet labelMapSet, IProbe probe)
         {
             _axis = axis;
             _scanData = scanData;
             _lookupTable = lookupTable;
-            _labelMap = labelMap;
+            _labelMapSet = labelMapSet;
             _probe = probe;
 
             _scanData.DataUpdated += () => this.Invoke(new MethodInvoker(ScanDataOnDataUpdated));
-            _labelMap.LabelDataChanged += LabelMapOnLabelDataChanged;
+            _labelMapSet.LabelDataChanged += LabelMapOnLabelDataChanged;
 
             InitializeComponent();
 
@@ -114,11 +114,17 @@ namespace DicomImageViewer
             var imgSize = ImageSize();
             var imgOffset = ImageOffset(imgSize);
 
-            foreach (var mark in _labelMap.GetProjection(_axis, CurrentCutIndex))
+            foreach (var label in _labelMapSet.GetAll())
             {
-                var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
-                g.FillRectangle(Brushes.OrangeRed, point.X, point.Y, 2, 2);
-            }           
+                using (var brush = new SolidBrush(label.Color))
+                {
+                    foreach (var mark in label.GetProjection(_axis, CurrentCutIndex))
+                    {
+                        var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
+                        g.FillRectangle(brush, point.X, point.Y, 2, 2);
+                    }
+                }
+            }
         }
 
         private void DrawDebugPoints(Graphics g)
@@ -126,11 +132,14 @@ namespace DicomImageViewer
 #if DEBUG
             var imgSize = ImageSize();
             var imgOffset = ImageOffset(imgSize);
-
-            foreach (var mark in _labelMap.GetDebugProjection(_axis, CurrentCutIndex))
+                        
+            foreach (var label in _labelMapSet.GetAll())
             {
-                var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
-                g.FillRectangle(Brushes.LimeGreen, point.X, point.Y, 2, 2);
+                foreach (var mark in label.GetDebugProjection(_axis, CurrentCutIndex))
+                {
+                    var point = Image2Surface(mark.To2D(_axis), imgOffset, imgSize);
+                    g.FillRectangle(Brushes.LimeGreen, point.X, point.Y, 2, 2);
+                }
             }
 #endif
         }
