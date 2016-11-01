@@ -9,6 +9,7 @@ namespace Model
     public delegate void DataUpdatedEvent();
     public interface IScanData
     {
+        List<string> DicomInfo { get; }
         Projection GetProjection(Axis axis, int index);
         int GetAxisCutCount(Axis axis);
         void MinMaxDencity(out int min, out int max);
@@ -19,6 +20,7 @@ namespace Model
 
     public class ScanSet : IScanData
     {
+        private readonly List<string> _dicomInfo = new List<string>();
         private readonly List<Slice> _slices = new List<Slice>();
         private ushort _minDens;
         private ushort _maxDens;
@@ -27,6 +29,10 @@ namespace Model
         {
              
         }
+
+        public List<string> DicomInfo => new List<string>(_dicomInfo);
+
+
         public void AddSlice(Slice slice)
         {
             _slices.Add(slice);
@@ -178,6 +184,9 @@ namespace Model
 
                 progress.Tick();
             }
+
+            _dicomInfo.Clear();
+            _dicomInfo.AddRange(_slices.First().DicomInfo);
 
             _slices.Clear();
 

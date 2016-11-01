@@ -138,19 +138,9 @@ namespace DicomImageViewer
         
         private void bnTags_Click(object sender, EventArgs e)
         {
-            //if (imageOpened == true)
-            //{
-            //    List<string> str = slice.DicomInfo;
-
-            //    DicomTagsForm dtg = new DicomTagsForm();
-            //    dtg.SetString(ref str);
-            //    dtg.ShowDialog();
-
-            //    imagePanelControl.Invalidate();
-            //}
-            //else
-            //    MessageBox.Show("Load a DICOM file before viewing tags!", "Information", 
-            //        MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var dtg = new DicomTagsForm();
+            dtg.SetString(_scanSet.DicomInfo);
+            dtg.ShowDialog();
         }
 
         private void MainForm_Load(object sender, EventArgs e)

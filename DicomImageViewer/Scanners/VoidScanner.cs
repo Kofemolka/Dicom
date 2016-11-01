@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using Model;
 
 namespace DicomImageViewer.Scanners
@@ -170,7 +167,28 @@ namespace DicomImageViewer.Scanners
                 throw new ArgumentOutOfRangeException();
 
             var scalarPoint = point.To2D(Axis.Z);
-            ushort probe = projection.Pixels[scalarPoint.X, scalarPoint.Y];
+        
+            int probe = 0;
+            const int probeHalfWidth = 3;
+
+            int probeCount = 0;
+            for (var x = Math.Max(0, scalarPoint.X - probeHalfWidth);
+                x < Math.Min(projection.Width, scalarPoint.X + probeHalfWidth);
+                x++)
+            {
+                for (var y = Math.Max(0, scalarPoint.Y - probeHalfWidth);
+                    y < Math.Min(projection.Height, scalarPoint.Y + probeHalfWidth);
+                    y++)
+                {
+                    probe += projection.Pixels[x, y];
+                    probeCount++;
+                }
+            }
+
+            if (probeCount > 0)
+            {
+                probe /= probeCount;
+            }
 
             return new Probe()
             {

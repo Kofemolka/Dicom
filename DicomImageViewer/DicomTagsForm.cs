@@ -18,7 +18,7 @@ namespace DicomImageViewer
 
         // Extract the substrings within the DICOM tags main string 
         //  to populate the list box
-        public void SetString(ref List<string> strg)
+        public void SetString(List<string> strg)
         {
             str = strg;
             string s1, s4, s5, s11, s12;
