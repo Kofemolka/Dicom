@@ -8,7 +8,7 @@ namespace Wpf3DView
 {    
     public partial class ViewPort : UserControl
     {
-        private Trackball _trackball;
+        private readonly Trackball _trackball;
         private readonly Model3DGroup _modelGroup = new Model3DGroup();
         private readonly ModelVisual3D _modelsVisual = new ModelVisual3D();
         private PerspectiveCamera _camera;        
@@ -122,6 +122,7 @@ namespace Wpf3DView
 
             _modelsVisual.Transform = t;
 
+            
             myViewport.Camera = _camera;            
             myViewport.Children.Add(_modelsVisual);
             myViewport.Height = this.Width;
@@ -209,7 +210,7 @@ namespace Wpf3DView
                     points = new List<Model.Point3D>();
                     zOrderCloud.Add(point3D.Z, points);
                 }
-
+                
                 points.Add(point3D);
             }
 

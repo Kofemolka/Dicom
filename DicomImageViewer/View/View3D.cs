@@ -37,7 +37,7 @@ namespace DicomImageViewer.View
             {
                 Invoke(new MethodInvoker(() => _viewPort.Reset()));
 
-                foreach (var label in _labelMapSet.GetAll())
+                foreach (var label in _labelMapSet.All)
                 {
                     Invoke(new MethodInvoker(() => _viewPort.AddModel(label.GetAll(), new System.Windows.Media.Color()
                     {

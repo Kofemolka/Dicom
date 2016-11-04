@@ -24,7 +24,7 @@ namespace DicomImageViewer
 
         private readonly ScanSet _scanSet = new ScanSet();
         private readonly ILookupTable _lookupTable;
-        private readonly LabelMapSet _labelMapSet = new LabelMapSet();
+        private readonly LabelMapSet _labelMapSet;
         private readonly VoidScanner _voidScanner;
 
         private readonly DicomDecoder _dd;
@@ -43,11 +43,13 @@ namespace DicomImageViewer
 
         public MainForm()
         {
+            _labelMapSet = new LabelMapSet(action => this.Invoke(action));
             _lookupTable = new LookupTable(_scanSet);
-            _voidScanner = new VoidScanner(_scanSet, _labelMapSet.Current);
+            _voidScanner = new VoidScanner(_scanSet, () => _labelMapSet.Current);
 
             InitializeComponent();
             labelMapView.LabelMapSet = _labelMapSet;
+            labelMapView.Init();
 
             _dd = new DicomDecoder();
 
@@ -177,11 +179,11 @@ namespace DicomImageViewer
                         LoadSlicesAsync(files, progIndicator);
 
                         _scanSet.Build(progIndicator);
-
-                        _labelMapSet.Reset();
                     }).ContinueWith((t) =>
                     {
                         this.Enabled = true;
+
+                        _labelMapSet.Reset();
 
                         Cursor = Cursors.Default;
 
@@ -270,16 +272,8 @@ namespace DicomImageViewer
             Task.Factory.StartNew(() =>
             {
                 _voidScanner.Build(_lastRayCast, Axis.Z, new Progress(progBar));
-
-                var volume = _voidScanner.CalculateVolume();
-
-                return volume;
             }).ContinueWith((t) =>
             {
-                if(t != null)
-                {
-                    lbVolume.Text = "Volume: " + (int)t.Result + " (mm3)";
-                }
                 this.Enabled = true;
 
                 Cursor = Cursors.Default;

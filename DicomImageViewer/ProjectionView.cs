@@ -114,7 +114,7 @@ namespace DicomImageViewer
             var imgSize = ImageSize();
             var imgOffset = ImageOffset(imgSize);
 
-            foreach (var label in _labelMapSet.GetAll())
+            foreach (var label in _labelMapSet.All)
             {
                 using (var brush = new SolidBrush(label.Color))
                 {
@@ -133,7 +133,7 @@ namespace DicomImageViewer
             var imgSize = ImageSize();
             var imgOffset = ImageOffset(imgSize);
                         
-            foreach (var label in _labelMapSet.GetAll())
+            foreach (var label in _labelMapSet.All)
             {
                 foreach (var mark in label.GetDebugProjection(_axis, CurrentCutIndex))
                 {

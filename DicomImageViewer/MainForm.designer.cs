@@ -50,7 +50,6 @@ namespace DicomImageViewer
             this.lbLowThresh = new System.Windows.Forms.Label();
             this.lbHiThresh = new System.Windows.Forms.Label();
             this.lbRays = new System.Windows.Forms.Label();
-            this.lbVolume = new System.Windows.Forms.Label();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackRays)).BeginInit();
@@ -220,7 +219,6 @@ namespace DicomImageViewer
             this.panel1.Controls.Add(this.lbLowThresh);
             this.panel1.Controls.Add(this.lbHiThresh);
             this.panel1.Controls.Add(this.lbRays);
-            this.panel1.Controls.Add(this.lbVolume);
             this.panel1.Controls.Add(this.lbDensity);
             this.panel1.Controls.Add(this.btnRebuild);
             this.panel1.Controls.Add(this.trackSkippedPixels);
@@ -280,15 +278,6 @@ namespace DicomImageViewer
             this.lbRays.TabIndex = 20;
             this.lbRays.Text = "Rays:";
             // 
-            // lbVolume
-            // 
-            this.lbVolume.AutoSize = true;
-            this.lbVolume.Location = new System.Drawing.Point(19, 84);
-            this.lbVolume.Name = "lbVolume";
-            this.lbVolume.Size = new System.Drawing.Size(45, 13);
-            this.lbVolume.TabIndex = 19;
-            this.lbVolume.Text = "Volume:";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -331,7 +320,6 @@ namespace DicomImageViewer
        
 
         private System.Windows.Forms.Button btnRebuild;
-        private System.Windows.Forms.Label lbVolume;
         private System.Windows.Forms.Label lbRays;
         private System.Windows.Forms.Label lbHiThresh;
         private System.Windows.Forms.Label lbLowThresh;

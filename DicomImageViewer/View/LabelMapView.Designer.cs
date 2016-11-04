@@ -28,14 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.lstLabels = new System.Windows.Forms.ListView();
-            this.clName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clColor = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.btnDelete = new System.Windows.Forms.Button();
             this.btnNew = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.btnDelete = new System.Windows.Forms.Button();
+            this.grid = new System.Windows.Forms.DataGridView();
+            this.backgroundWorker2 = new System.ComponentModel.BackgroundWorker();
+            this.labelMapViewBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.grid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.labelMapViewBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -48,28 +51,15 @@
             this.panel1.Size = new System.Drawing.Size(318, 32);
             this.panel1.TabIndex = 0;
             // 
-            // lstLabels
+            // btnDelete
             // 
-            this.lstLabels.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.clName,
-            this.clColor});
-            this.lstLabels.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lstLabels.Location = new System.Drawing.Point(0, 32);
-            this.lstLabels.MultiSelect = false;
-            this.lstLabels.Name = "lstLabels";
-            this.lstLabels.Size = new System.Drawing.Size(318, 220);
-            this.lstLabels.TabIndex = 1;
-            this.lstLabels.UseCompatibleStateImageBehavior = false;
-            this.lstLabels.View = System.Windows.Forms.View.Details;
-            // 
-            // clName
-            // 
-            this.clName.Text = "Label";
-            this.clName.Width = 151;
-            // 
-            // clColor
-            // 
-            this.clColor.Text = "Color";
+            this.btnDelete.Location = new System.Drawing.Point(70, 3);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(56, 23);
+            this.btnDelete.TabIndex = 1;
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
             // 
             // btnNew
             // 
@@ -81,24 +71,38 @@
             this.btnNew.UseVisualStyleBackColor = true;
             this.btnNew.Click += new System.EventHandler(this.btnNew_Click);
             // 
-            // btnDelete
+            // grid
             // 
-            this.btnDelete.Location = new System.Drawing.Point(70, 3);
-            this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(56, 23);
-            this.btnDelete.TabIndex = 1;
-            this.btnDelete.Text = "Delete";
-            this.btnDelete.UseVisualStyleBackColor = true;
+            this.grid.AllowUserToAddRows = false;
+            this.grid.AllowUserToDeleteRows = false;
+            this.grid.AllowUserToResizeRows = false;
+            this.grid.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.grid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.grid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grid.Location = new System.Drawing.Point(0, 32);
+            this.grid.MultiSelect = false;
+            this.grid.Name = "grid";
+            this.grid.RowHeadersVisible = false;
+            this.grid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.grid.Size = new System.Drawing.Size(318, 220);
+            this.grid.TabIndex = 1;
+            this.grid.SelectionChanged += new System.EventHandler(this.grid_SelectionChanged);
+            // 
+            // labelMapViewBindingSource
+            // 
+            this.labelMapViewBindingSource.DataSource = typeof(DicomImageViewer.View.LabelMapView);
             // 
             // LabelMapView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.lstLabels);
+            this.Controls.Add(this.grid);
             this.Controls.Add(this.panel1);
             this.Name = "LabelMapView";
             this.Size = new System.Drawing.Size(318, 252);
             this.panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.grid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.labelMapViewBindingSource)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -108,9 +112,9 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.Button btnNew;
-        private System.Windows.Forms.ListView lstLabels;
-        private System.Windows.Forms.ColumnHeader clName;
-        private System.Windows.Forms.ColumnHeader clColor;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.DataGridView grid;
+        private System.ComponentModel.BackgroundWorker backgroundWorker2;
+        private System.Windows.Forms.BindingSource labelMapViewBindingSource;
     }
 }

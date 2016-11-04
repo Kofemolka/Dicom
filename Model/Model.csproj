@@ -49,6 +49,7 @@
     <Compile Include="Point2D.cs" />
     <Compile Include="Point3D.cs" />
     <Compile Include="Projection.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScanSet.cs" />
     <Compile Include="Slice.cs" />

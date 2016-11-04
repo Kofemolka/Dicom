@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Model.Annotations;
 
 namespace Model
 {
     public delegate void LabelDataChangedEvent();
 
-    public interface ILabelMap
+    public interface ILabelMap : INotifyPropertyChanged
     {
+        string Name { get; set; }
+        int Volume { get; set; }
         System.Drawing.Color Color { get; set; }
 
 #if DEBUG
@@ -74,7 +79,18 @@ namespace Model
             }
         }
 #endif
+        public string Name { get; set; }
+
+        public int Volume
+        {
+            get { return _volume; }
+            set { _volume = value;
+                OnPropertyChanged(nameof(Volume));
+            }
+        }
         public System.Drawing.Color Color { get; set; }
+
+        private int _volume = 0;
 
         public void FireUpdate()
         {
@@ -160,5 +176,12 @@ namespace Model
         }
 
         public event LabelDataChangedEvent LabelDataChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

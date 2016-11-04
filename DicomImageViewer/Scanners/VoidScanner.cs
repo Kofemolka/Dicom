@@ -89,11 +89,13 @@ namespace DicomImageViewer.Scanners
             }));
 
             Task.WaitAll(tasks.ToArray());
-           
+
+            CalculateVolume();
+
             _labelMap().FireUpdate();
         }
 
-        public double CalculateVolume()
+        private void CalculateVolume()
         {
             var volume = 0.0d;
             var guard = new object();
@@ -125,7 +127,7 @@ namespace DicomImageViewer.Scanners
             double xres, yres, zres;
             _scanData.Resolution(out xres, out yres, out zres);
 
-            return volume * xres * yres * zres;
+            _labelMap().Volume = (int)(volume * xres * yres * zres);
         }
 
         private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
