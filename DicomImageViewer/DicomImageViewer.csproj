@@ -124,6 +124,12 @@
     <EmbeddedResource Include="View\LabelMapView.resx">
       <DependentUpon>LabelMapView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="View\RayCastingProperties.resx">
+      <DependentUpon>RayCastingProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\ThresholdProperties.resx">
+      <DependentUpon>ThresholdProperties.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\View3D.resx">
       <DependentUpon>View3D.cs</DependentUpon>
     </EmbeddedResource>
@@ -146,12 +152,27 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Scanners\Probe.cs" />
+    <Compile Include="Scanners\ThresholdScanner.cs" />
     <Compile Include="Scanners\VoidScanner.cs" />
+    <Compile Include="View\IScannerProperties.cs" />
     <Compile Include="View\LabelMapView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="View\LabelMapView.Designer.cs">
       <DependentUpon>LabelMapView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\RayCastingProperties.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\RayCastingProperties.Designer.cs">
+      <DependentUpon>RayCastingProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\ThresholdProperties.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\ThresholdProperties.Designer.cs">
+      <DependentUpon>ThresholdProperties.cs</DependentUpon>
     </Compile>
     <Compile Include="View\View3D.cs">
       <SubType>UserControl</SubType>

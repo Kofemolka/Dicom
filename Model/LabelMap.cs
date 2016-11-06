@@ -8,11 +8,19 @@ namespace Model
 {
     public delegate void LabelDataChangedEvent();
 
+    public enum BuildMethod
+    {
+        RayCasting,
+        Threshold
+    }
+
     public interface ILabelMap : INotifyPropertyChanged
     {
         string Name { get; set; }
         int Volume { get; set; }
         System.Drawing.Color Color { get; set; }
+        BuildMethod BuildMethod { get; set; }
+
 
 #if DEBUG
         void AddDebugPoint(Point3D point);
@@ -79,6 +87,7 @@ namespace Model
             }
         }
 #endif
+        public BuildMethod BuildMethod { get; set; }
         public string Name { get; set; }
 
         public int Volume
@@ -88,6 +97,7 @@ namespace Model
                 OnPropertyChanged(nameof(Volume));
             }
         }
+
         public System.Drawing.Color Color { get; set; }
 
         private int _volume = 0;

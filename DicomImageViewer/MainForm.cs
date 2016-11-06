@@ -10,6 +10,7 @@ using DicomImageViewer.Scanners;
 using System.Windows.Forms.Integration;
 using Model;
 using Model.Utils;
+using DicomImageViewer.View;
 
 namespace DicomImageViewer
 {
@@ -26,6 +27,7 @@ namespace DicomImageViewer
         private readonly ILookupTable _lookupTable;
         private readonly LabelMapSet _labelMapSet;
         private readonly VoidScanner _voidScanner;
+        private readonly ThresholdScanner _threshScanner;
 
         private readonly DicomDecoder _dd;
 
@@ -36,9 +38,7 @@ namespace DicomImageViewer
        
         int maxPixelValue;    // Updated July 2012
         int minPixelValue;
-
-        private Point3D _lastRayCast;
-
+        
         public View.View3D View3D => _3dView;
 
         public MainForm()
@@ -46,8 +46,13 @@ namespace DicomImageViewer
             _labelMapSet = new LabelMapSet(action => this.Invoke(action));
             _lookupTable = new LookupTable(_scanSet);
             _voidScanner = new VoidScanner(_scanSet, () => _labelMapSet.Current);
+            _threshScanner = new ThresholdScanner(_scanSet, () => _labelMapSet.Current);
 
             InitializeComponent();
+
+            rayCastingProperties.Init(_voidScanner, new Progress(progBar), this);
+            thresholdProperties.Init(_threshScanner, new Progress(progBar), this);
+
             labelMapView.LabelMapSet = _labelMapSet;
             labelMapView.Init();
 
@@ -62,11 +67,6 @@ namespace DicomImageViewer
 
             maxPixelValue = 0;
             minPixelValue = 65535;
-          
-            trackHiThresh.Value = VoidScanner.thUp;
-            trackLowThresh.Value = VoidScanner.thDown;
-            trackSkippedPixels.Value = VoidScanner.MaxSkip;
-            trackRays.Value = VoidScanner.Rays;
             
             InitUI();
         }
@@ -108,12 +108,10 @@ namespace DicomImageViewer
         }
 
         private void UpdateScanInfo()
-        {
-           
+        {           
             winCentre = _scanSet.windowCentre;
             winWidth = _scanSet.windowWidth;
-
-           
+                       
             //bnSave.Enabled = true;
             bnTags.Enabled = true;
                        
@@ -156,7 +154,6 @@ namespace DicomImageViewer
             int winMax = winMin + winWidth;            
         }
   
-
         private void btnOpenSeries_Click(object sender, EventArgs e)
         {
             using (var dlg = new FolderBrowserDialog())
@@ -240,51 +237,7 @@ namespace DicomImageViewer
                     _scanSet.AddSlice(slice);
                 }
             }
-        }
-        
-        private void trackHiThresh_ValueChanged(object sender, EventArgs e)
-        {
-            VoidScanner.thUp = (ushort)trackHiThresh.Value;
-            lbHiThresh.Text = "HI threshold: " + VoidScanner.thUp;
-        }
-
-        private void trackLowThresh_ValueChanged(object sender, EventArgs e)
-        {
-            VoidScanner.thDown = (ushort)trackLowThresh.Value;
-            lbLowThresh.Text = "LOW threshold: " + VoidScanner.thDown;
-        }
-
-        private void RayCast(Point3D point = null)
-        {
-            if (point != null)
-            {
-                _lastRayCast = point;
-            }
-
-            if (_lastRayCast == null)
-            {
-                return;
-            }
-
-            Cursor = Cursors.WaitCursor;
-            this.Enabled = false;
-            
-            Task.Factory.StartNew(() =>
-            {
-                _voidScanner.Build(_lastRayCast, Axis.Z, new Progress(progBar));
-            }).ContinueWith((t) =>
-            {
-                this.Enabled = true;
-
-                Cursor = Cursors.Default;
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        private void trackSkippedPixels_ValueChanged(object sender, EventArgs e)
-        {
-            VoidScanner.MaxSkip = trackSkippedPixels.Value;
-            lbHunger.Text = "Hunger: " + VoidScanner.MaxSkip;
-        }
+        }              
 
         public void Dencity(ushort density)
         {
@@ -293,23 +246,12 @@ namespace DicomImageViewer
 
         public void PointSelect(Point3D point)
         {
-            RayCast(point);
-        }
+            var scanProp = (tabsScanners.SelectedTab.Tag as IScannerProperties);
 
-        private void btnRebuild_Click(object sender, EventArgs e)
-        {
-            RayCast();
-        }
-
-        private void trackRays_ValueChanged(object sender, EventArgs e)
-        {
-            VoidScanner.Rays = trackRays.Value;
-            lbRays.Text = "Rays: " + trackRays.Value;
-        }
-
-        private void lbHiThresh_Click(object sender, EventArgs e)
-        {
-
-        }
+            if(scanProp != null)
+            {
+                scanProp.Scan(point);
+            }
+        }        
     }
 }

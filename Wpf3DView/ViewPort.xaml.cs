@@ -47,11 +47,23 @@ namespace Wpf3DView
             _modelGroup.Children.Add(DirLight2);
         }
 
-        public void AddModel(IEnumerable<Model.Point3D> points, Color color)
+        public void AddModel(IEnumerable<Model.Point3D> points, Color color, Model.BuildMethod buildMethod)
         {
-            //Point3D center;
-            var geo = BuildMesh(points);
-            
+            MeshGeometry3D geo = null;
+            switch(buildMethod)
+            {
+                case Model.BuildMethod.RayCasting:
+                    geo = BuildMesh(points);
+                    break;
+
+                case Model.BuildMethod.Threshold:
+                    geo = BuildPointCloud(points);
+                    break;
+
+                default:
+                    return;
+            }
+                        
             var model = new GeometryModel3D();
             model.Material = new DiffuseMaterial(new SolidColorBrush(color));
 
@@ -133,68 +145,26 @@ namespace Wpf3DView
             this.Height = myViewport.Height;
         }
 
-        private void AddCubeToMesh(MeshGeometry3D mesh, Point3D center, double size)
+        private void AddCubeToMesh(MeshGeometry3D mesh, Dictionary<Model.Point3D, int> hashPoint, Model.Point3D center, int size)
         {
             if (mesh != null)
             {
-                int offset = mesh.Positions.Count;
+                if (mesh != null)
+                {
+                    int offset = mesh.Positions.Count;
 
-                mesh.Positions.Add(new Point3D(center.X - size, center.Y + size, center.Z - size));
-                mesh.Positions.Add(new Point3D(center.X + size, center.Y + size, center.Z - size));
-                mesh.Positions.Add(new Point3D(center.X + size, center.Y + size, center.Z + size));
-                mesh.Positions.Add(new Point3D(center.X - size, center.Y + size, center.Z + size));
-                mesh.Positions.Add(new Point3D(center.X - size, center.Y - size, center.Z - size));
-                mesh.Positions.Add(new Point3D(center.X + size, center.Y - size, center.Z - size));
-                mesh.Positions.Add(new Point3D(center.X + size, center.Y - size, center.Z + size));
-                mesh.Positions.Add(new Point3D(center.X - size, center.Y - size, center.Z + size));
+                    mesh.Positions.Add(new Point3D(center.X, center.Y, center.Z));
+                    mesh.Positions.Add(new Point3D(center.X+ size, center.Y, center.Z));
+                    mesh.Positions.Add(new Point3D(center.X+ size, center.Y+ size, center.Z));
 
-                mesh.TriangleIndices.Add(offset + 3);
-                mesh.TriangleIndices.Add(offset + 2);
-                mesh.TriangleIndices.Add(offset + 6);
+                    mesh.TriangleIndices.Add(offset + 0);
+                    mesh.TriangleIndices.Add(offset + 1);
+                    mesh.TriangleIndices.Add(offset + 2);
 
-                mesh.TriangleIndices.Add(offset + 3);
-                mesh.TriangleIndices.Add(offset + 6);
-                mesh.TriangleIndices.Add(offset + 7);
-
-                mesh.TriangleIndices.Add(offset + 2);
-                mesh.TriangleIndices.Add(offset + 1);
-                mesh.TriangleIndices.Add(offset + 5);
-
-                mesh.TriangleIndices.Add(offset + 2);
-                mesh.TriangleIndices.Add(offset + 5);
-                mesh.TriangleIndices.Add(offset + 6);
-
-                mesh.TriangleIndices.Add(offset + 1);
-                mesh.TriangleIndices.Add(offset + 0);
-                mesh.TriangleIndices.Add(offset + 4);
-
-                mesh.TriangleIndices.Add(offset + 1);
-                mesh.TriangleIndices.Add(offset + 4);
-                mesh.TriangleIndices.Add(offset + 5);
-
-                mesh.TriangleIndices.Add(offset + 0);
-                mesh.TriangleIndices.Add(offset + 3);
-                mesh.TriangleIndices.Add(offset + 7);
-
-                mesh.TriangleIndices.Add(offset + 0);
-                mesh.TriangleIndices.Add(offset + 7);
-                mesh.TriangleIndices.Add(offset + 4);
-
-                mesh.TriangleIndices.Add(offset + 7);
-                mesh.TriangleIndices.Add(offset + 6);
-                mesh.TriangleIndices.Add(offset + 5);
-
-                mesh.TriangleIndices.Add(offset + 7);
-                mesh.TriangleIndices.Add(offset + 5);
-                mesh.TriangleIndices.Add(offset + 4);
-
-                mesh.TriangleIndices.Add(offset + 2);
-                mesh.TriangleIndices.Add(offset + 3);
-                mesh.TriangleIndices.Add(offset + 0);
-
-                mesh.TriangleIndices.Add(offset + 2);
-                mesh.TriangleIndices.Add(offset + 0);
-                mesh.TriangleIndices.Add(offset + 1);
+                    mesh.TriangleIndices.Add(offset + 0);
+                    mesh.TriangleIndices.Add(offset + 2);
+                    mesh.TriangleIndices.Add(offset + 1);                   
+                }
             }
         }
 
@@ -238,6 +208,25 @@ namespace Wpf3DView
                 geo.Positions.Add(new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
             }
             
+            return geo;
+        }
+
+        private MeshGeometry3D BuildPointCloud(IEnumerable<Model.Point3D> pointCloud)
+        {
+            MeshGeometry3D geo = new MeshGeometry3D();
+
+            var hashPoint = new Dictionary<Model.Point3D, int>();
+
+            foreach(var p in pointCloud)
+            {
+                AddCubeToMesh(geo, hashPoint, p, 1);
+            }
+
+            //foreach (var source in hashPoint.OrderBy(pair => pair.Value))
+            //{
+            //    geo.Positions.Add(new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
+            //}
+
             return geo;
         }
 

@@ -13,6 +13,7 @@ namespace Model
     {
         List<string> DicomInfo { get; }
         Projection GetProjection(Axis axis, int index);
+        IEnumerable<Projection> GetAllProjections(Axis axis);
         int GetAxisCutCount(Axis axis);
         void MinMaxDencity(out int min, out int max);
         void Resolution(out double X, out double Y, out double Z);
@@ -33,7 +34,6 @@ namespace Model
         }
 
         public List<string> DicomInfo => new List<string>(_dicomInfo);
-
 
         public void AddSlice(Slice slice)
         {
@@ -76,6 +76,36 @@ namespace Model
             }
         }
 
+        public IEnumerable<Projection> GetAllProjections(Axis axis)
+        {
+            switch (axis)
+            {
+                case Axis.X:
+                    for (int index = 0; index < XSize; index++)
+                    {
+                        yield return getXProjection(index);
+                    }
+                    break;
+
+                case Axis.Y:
+                    for (int index = 0; index < YSize; index++)
+                    {
+                        yield return getYProjection(index);
+                    }
+                    break;
+
+                case Axis.Z:
+                    for (int index = 0; index < ZSize; index++)
+                    {
+                        yield return getZProjection(index);
+                    }
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(axis), axis, null);
+            }
+        }
+        
         public int GetAxisCutCount(Axis axis)
         {
             switch (axis)

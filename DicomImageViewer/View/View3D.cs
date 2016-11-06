@@ -45,7 +45,8 @@ namespace DicomImageViewer.View
                         R = label.Color.R,
                         G = label.Color.G,
                         B = label.Color.B
-                    })));
+                    },
+                    label.BuildMethod)));
                 }
 
                 //Save(_labelMap.GetAll());

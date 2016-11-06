@@ -1,34 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Model;
 using Model.Utils;
 
 namespace DicomImageViewer.Scanners
 {
-    class VoidScanner
+    public class VoidScanner
     {
         private readonly IScanData _scanData;
-        private readonly Func<ILabelMap> _labelMap;
+        private readonly Func<ILabelMap> _labelMap;               
 
-        class Probe
-        {
-            public ushort Min;
-            public ushort Max;
-
-            public bool InRange(ushort val)
-            {
-                return val >= Min && val <= Max;
-            }
-        }
-
-        public static int MaxSkip { get; set; } = 6;
-        public static ushort thUp { get; set; } = 135;
-        public static ushort thDown { get; set; } = 370;
-        public static int Rays = 360;
+        public int MaxSkip { get; set; } = 6;
+        public ushort thUp { get; set; } = 135;
+        public ushort thDown { get; set; } = 370;
+        public int Rays { get; set; } = 360;
 
         public VoidScanner(IScanData scanData, Func<ILabelMap> labelMap)
         {
@@ -39,8 +26,9 @@ namespace DicomImageViewer.Scanners
         public void Build(Point3D point, Axis axis, IProgress progress)
         {
             _labelMap().Reset();
+            _labelMap().BuildMethod = BuildMethod.RayCasting;
 
-            var fixProbe = GetStartingProbe(point);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, thUp, thDown);
 
             var heightMap = BuildHeightMap(point, axis, fixProbe);
             var maxHeight = heightMap.Keys.Max();
@@ -93,6 +81,8 @@ namespace DicomImageViewer.Scanners
             CalculateVolume();
 
             _labelMap().FireUpdate();
+
+            Task.Factory.StartNew(GC.Collect);
         }
 
         private void CalculateVolume()
@@ -188,45 +178,7 @@ namespace DicomImageViewer.Scanners
 
             return new Point3D(x / layer.Count, y / layer.Count, layer.First().Z);
         }
-
-        private Probe GetStartingProbe(Point3D point)
-        {
-            var projection = _scanData.GetProjection(Axis.Z, point[Axis.Z]);
-
-            if (projection.Empty)
-                throw new ArgumentOutOfRangeException();
-
-            var scalarPoint = point.To2D(Axis.Z);
         
-            int probe = 0;
-            const int probeHalfWidth = 3;
-
-            int probeCount = 0;
-            for (var x = Math.Max(0, scalarPoint.X - probeHalfWidth);
-                x < Math.Min(projection.Width, scalarPoint.X + probeHalfWidth);
-                x++)
-            {
-                for (var y = Math.Max(0, scalarPoint.Y - probeHalfWidth);
-                    y < Math.Min(projection.Height, scalarPoint.Y + probeHalfWidth);
-                    y++)
-                {
-                    probe += projection.Pixels[x, y];
-                    probeCount++;
-                }
-            }
-
-            if (probeCount > 0)
-            {
-                probe /= probeCount;
-            }
-
-            return new Probe()
-            {
-                Max = (ushort) (probe + thUp),
-                Min = (ushort) (probe - thDown)
-            };
-        }
-
         private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Axis axis, Probe probe)
         {
             var res = new List<Point3D>();
