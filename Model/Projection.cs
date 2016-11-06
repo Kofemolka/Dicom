@@ -1,7 +1,7 @@
 ﻿namespace Model
 {
     public class Projection
-    {
+    {        
         public Projection(Axis axis, int width, int height, ushort[,] pixels)
         {
             Axis = axis;

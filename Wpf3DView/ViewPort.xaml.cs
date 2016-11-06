@@ -145,7 +145,7 @@ namespace Wpf3DView
             this.Height = myViewport.Height;
         }
 
-        private void AddCubeToMesh(MeshGeometry3D mesh, Dictionary<Model.Point3D, int> hashPoint, Model.Point3D center, int size)
+        private void AddCubeToMesh(MeshGeometry3D mesh, Model.Point3D center, double size)
         {
             if (mesh != null)
             {
@@ -154,16 +154,25 @@ namespace Wpf3DView
                     int offset = mesh.Positions.Count;
 
                     mesh.Positions.Add(new Point3D(center.X, center.Y, center.Z));
-                    mesh.Positions.Add(new Point3D(center.X+ size, center.Y, center.Z));
-                    mesh.Positions.Add(new Point3D(center.X+ size, center.Y+ size, center.Z));
+                    mesh.Positions.Add(new Point3D(center.X, center.Y + size, center.Z));
+                    mesh.Positions.Add(new Point3D(center.X + size, center.Y, center.Z));
+                    mesh.Positions.Add(new Point3D(center.X, center.Y, center.Z + size));                    
 
                     mesh.TriangleIndices.Add(offset + 0);
                     mesh.TriangleIndices.Add(offset + 1);
                     mesh.TriangleIndices.Add(offset + 2);
 
+                    mesh.TriangleIndices.Add(offset + 1);
+                    mesh.TriangleIndices.Add(offset + 3);
                     mesh.TriangleIndices.Add(offset + 0);
+
                     mesh.TriangleIndices.Add(offset + 2);
-                    mesh.TriangleIndices.Add(offset + 1);                   
+                    mesh.TriangleIndices.Add(offset + 3);
+                    mesh.TriangleIndices.Add(offset + 0);
+
+                    mesh.TriangleIndices.Add(offset + 2);
+                    mesh.TriangleIndices.Add(offset + 3);
+                    mesh.TriangleIndices.Add(offset + 1);
                 }
             }
         }
@@ -215,11 +224,9 @@ namespace Wpf3DView
         {
             MeshGeometry3D geo = new MeshGeometry3D();
 
-            var hashPoint = new Dictionary<Model.Point3D, int>();
-
             foreach(var p in pointCloud)
             {
-                AddCubeToMesh(geo, hashPoint, p, 1);
+                AddCubeToMesh(geo,  p, 2d);
             }
 
             //foreach (var source in hashPoint.OrderBy(pair => pair.Value))
