@@ -57,7 +57,7 @@
             // 
             this.trackThresh.LargeChange = 20;
             this.trackThresh.Location = new System.Drawing.Point(0, 16);
-            this.trackThresh.Maximum = 1000;
+            this.trackThresh.Maximum = 150;
             this.trackThresh.Name = "trackThresh";
             this.trackThresh.Size = new System.Drawing.Size(240, 45);
             this.trackThresh.SmallChange = 5;

@@ -137,9 +137,9 @@ namespace DicomImageViewer
             // 
             // progBar
             // 
-            this.progBar.Location = new System.Drawing.Point(90, 73);
+            this.progBar.Location = new System.Drawing.Point(11, 73);
             this.progBar.Name = "progBar";
-            this.progBar.Size = new System.Drawing.Size(176, 29);
+            this.progBar.Size = new System.Drawing.Size(262, 29);
             this.progBar.TabIndex = 12;
             // 
             // lbDensity

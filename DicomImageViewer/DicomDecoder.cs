@@ -30,6 +30,7 @@ namespace DicomImageViewer
         const uint GREEN_PALETTE              = 0x00281202;
         const uint BLUE_PALETTE               = 0x00281203;
         const uint ICON_IMAGE_SEQUENCE        = 0x00880200;
+        const uint SLICE_LOCATION             = 0x00201041;
         const uint PIXEL_DATA                 = 0x7FE00010;
 
         const string ITEM                     = "FFFEE000";
@@ -81,7 +82,7 @@ namespace DicomImageViewer
         
         public bool dicmFound; // "DICM" found at offset 128
 
-        DicomDictionary dic;
+        DicomDictionary _dic;
         BinaryReader file;
         String dicomFileName;
         String photoInterpretation;
@@ -112,7 +113,7 @@ namespace DicomImageViewer
 
         public DicomDecoder()
         {
-            dic = new DicomDictionary();
+            _dic = new DicomDictionary();
             
             InitializeDicom();
         }
@@ -135,6 +136,10 @@ namespace DicomImageViewer
         public Slice ReadDicomFile(string fileName)
         {
             var slice = new Slice();
+
+            var fileSize = new System.IO.FileInfo(fileName).Length;
+            if (fileSize > 2*1024*1024)
+                return slice;
 
             InitializeDicom();
 
@@ -399,9 +404,9 @@ namespace DicomImageViewer
 
             string id = null;
             
-            if (dic.dict.ContainsKey(str))
+            if (_dic.dict.ContainsKey(str))
             {
-                id = dic.dict[str];
+                id = _dic.dict[str];
                 if (id != null)
                 {
                     if (vr == IMPLICIT_VR)
@@ -689,6 +694,14 @@ namespace DicomImageViewer
                             AddInfo(tag, null, slice);
                         pixelDataTagFound = true;
                         break;
+
+                    case (int)(SLICE_LOCATION):
+                        var data = GetString(elementLength);
+                        var sliceLocation = Convert.ToDouble(data, new CultureInfo("en-US"));
+                        slice.Location = sliceLocation;
+                        AddInfo(tag, data, slice);
+                        break;
+
                     default:
                         AddInfo(tag, null, slice);
                         break;

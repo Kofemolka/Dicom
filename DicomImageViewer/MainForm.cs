@@ -195,48 +195,62 @@ namespace DicomImageViewer
 
         private void LoadSlicesAsync(string[] files, IProgress progress)
         {
-            var filesCount = files.Length;
-            var filesPerThread = filesCount/Environment.ProcessorCount;
-
             progress.Min(1);
-            progress.Max(filesCount);
+            progress.Max(files.Length);
             progress.Reset();
 
-            var tasks = new List<Task<List<Slice>>>();
-
-            for (int t = 0; t < Environment.ProcessorCount; t++)
+            Parallel.ForEach(files, file =>
             {
-                var t1 = t;
-                tasks.Add(Task.Factory.StartNew(() =>
-                {
-                    var lastFileNdx = t1 == Environment.ProcessorCount
-                        ? filesCount
-                        : (t1*filesPerThread + filesPerThread);
+                var decoder = new DicomDecoder();
 
-                    var decoder = new DicomDecoder();
+                var slice = decoder.ReadDicomFile(file);
 
-                    var res = new List<Slice>();
+                _scanSet.AddSlice(slice);
 
-                    for (var f = t1*filesPerThread; f < lastFileNdx; f++)
-                    {
-                        res.Add(decoder.ReadDicomFile(files[f]));
+                progress.Tick();
+            });
+            //var filesCount = files.Length;
+            //var filesPerThread = filesCount/Environment.ProcessorCount;
 
-                        progress.Tick();
-                    }
+            //progress.Min(1);
+            //progress.Max(filesCount);
+            //progress.Reset();
 
-                    return res;
-                }));
-            }
+            //var tasks = new List<Task<List<Slice>>>();
 
-            Task.WaitAll(tasks.ToArray());
+            //for (int t = 0; t < Environment.ProcessorCount; t++)
+            //{
+            //    var t1 = t;
+            //    tasks.Add(Task.Factory.StartNew(() =>
+            //    {
+            //        var lastFileNdx = t1 == Environment.ProcessorCount
+            //            ? filesCount
+            //            : (t1*filesPerThread + filesPerThread);
 
-            foreach (var task in tasks)
-            {
-                foreach (var slice in task.Result)
-                {
-                    _scanSet.AddSlice(slice);
-                }
-            }
+            //        var decoder = new DicomDecoder();
+
+            //        var res = new List<Slice>();
+
+            //        for (var f = t1*filesPerThread; f < lastFileNdx; f++)
+            //        {
+            //            res.Add(decoder.ReadDicomFile(files[f]));
+
+            //            progress.Tick();
+            //        }
+
+            //        return res;
+            //    }));
+            //}
+
+            //Task.WaitAll(tasks.ToArray());
+
+            //foreach (var task in tasks)
+            //{
+            //    foreach (var slice in task.Result)
+            //    {
+            //        _scanSet.AddSlice(slice);
+            //    }
+            //}
         }              
 
         public void Dencity(ushort density)

@@ -15,6 +15,7 @@ namespace Model
         public double windowWidth = 0;
         public bool signedImage = false;
 
+        public double Location { get; set; }
         public double XRes { get; set; }
         public double YRes { get; set; }
         public double ZRes { get; set; }

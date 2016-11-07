@@ -37,7 +37,13 @@ namespace Model
 
         public void AddSlice(Slice slice)
         {
-            _slices.Add(slice);
+            if (slice.typeofDicomFile == TypeOfDicomFile.NotDicom)
+                return;
+
+            lock (_slices)
+            {
+                _slices.Add(slice);
+            }
         }
 
         public void Reset()
@@ -178,14 +184,14 @@ namespace Model
         {
             if (!_slices.Any())
                 return;
-
+            
             initCommonProperties(_slices.First());
 
             XSize = _slices.First().width;
             YSize = _slices.First().height;
             ZSize = _slices.Count;
-
-            Pixels = new ushort[_slices.Count, XSize, YSize];
+            
+            Pixels = new ushort[ZSize, XSize, YSize];
 
             progress.Min(1);
             progress.Max(ZSize);
@@ -197,7 +203,9 @@ namespace Model
             var minDenses = new ConcurrentBag<ushort>();
             var maxDenses = new ConcurrentBag<ushort>();
 
-            Parallel.ForEach(_slices, (slice, state, z) =>
+            var slices = _slices.OrderBy(s => s.Location).ToList();
+
+            Parallel.ForEach(slices, (slice, state, z) =>
             {
                 var minDens = ushort.MaxValue;
                 var maxDens = ushort.MinValue;
@@ -206,7 +214,7 @@ namespace Model
                 {
                     for (int y = 0; y < YSize; y++)
                     {
-                        Pixels[z, x, y] = _slices[(int) z].pixels.ElementAt(x*XSize + y);
+                        Pixels[z, x, y] = slices[(int) z].pixels.ElementAt(x*XSize + y);
 
                         if (Pixels[z, x, y] > maxDens)
                         {

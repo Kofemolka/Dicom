@@ -19,6 +19,8 @@ namespace Wpf3DView
 
         public Trackball Trackball => _trackball;
 
+        private long _vertexCount = 0;
+
         public ViewPort()
         {
             InitializeComponent();          
@@ -45,6 +47,8 @@ namespace Wpf3DView
 
             _modelGroup.Children.Add(DirLight1);
             _modelGroup.Children.Add(DirLight2);
+
+            _vertexCount = 0;
         }
 
         public void AddModel(IEnumerable<Model.Point3D> points, Color color, Model.BuildMethod buildMethod)
@@ -58,6 +62,7 @@ namespace Wpf3DView
 
                 case Model.BuildMethod.Threshold:
                     geo = BuildPointCloud(points);
+                    color.A = 125;
                     break;
 
                 default:
@@ -145,36 +150,113 @@ namespace Wpf3DView
             this.Height = myViewport.Height;
         }
 
-        private void AddCubeToMesh(MeshGeometry3D mesh, Model.Point3D center, double size)
+        private void SafeAddPoint(MeshGeometry3D mesh, Point3D point)
         {
-            if (mesh != null)
+            if(++_vertexCount >= int.MaxValue)
+                return;
+
+            mesh.Positions.Add(point);
+        }
+
+        private static short RandomPolyCounter = 0;
+        private void AddRandomPolyToMesh(MeshGeometry3D mesh, Model.Point3D center, double size)
+        {
+            int offset = mesh.Positions.Count;
+            
+            if (++RandomPolyCounter > 3)
             {
-                if (mesh != null)
-                {
-                    int offset = mesh.Positions.Count;
-
-                    mesh.Positions.Add(new Point3D(center.X, center.Y, center.Z));
-                    mesh.Positions.Add(new Point3D(center.X, center.Y + size, center.Z));
-                    mesh.Positions.Add(new Point3D(center.X + size, center.Y, center.Z));
-                    mesh.Positions.Add(new Point3D(center.X, center.Y, center.Z + size));                    
-
-                    mesh.TriangleIndices.Add(offset + 0);
-                    mesh.TriangleIndices.Add(offset + 1);
-                    mesh.TriangleIndices.Add(offset + 2);
-
-                    mesh.TriangleIndices.Add(offset + 1);
-                    mesh.TriangleIndices.Add(offset + 3);
-                    mesh.TriangleIndices.Add(offset + 0);
-
-                    mesh.TriangleIndices.Add(offset + 2);
-                    mesh.TriangleIndices.Add(offset + 3);
-                    mesh.TriangleIndices.Add(offset + 0);
-
-                    mesh.TriangleIndices.Add(offset + 2);
-                    mesh.TriangleIndices.Add(offset + 3);
-                    mesh.TriangleIndices.Add(offset + 1);
-                }
+                RandomPolyCounter = 0;
             }
+
+            Point3D p1, p2, p3;
+
+            switch (RandomPolyCounter)
+            {
+                case 0:
+                    p1 = new Point3D(center.X, center.Y, center.Z);
+                    p2 = new Point3D(center.X + size, center.Y, center.Z);
+                    p3 = new Point3D(center.X, center.Y + size, center.Z);
+                    break;
+                case 1:
+                    p1 = new Point3D(center.X, center.Y, center.Z);
+                    p2 = new Point3D(center.X, center.Y, center.Z + size);
+                    p3 = new Point3D(center.X + size, center.Y, center.Z);
+                    break;
+                case 2:
+                    p1 = new Point3D(center.X, center.Y, center.Z);
+                    p2 = new Point3D(center.X, center.Y + size, center.Z);
+                    p3 = new Point3D(center.X, center.Y, center.Z + size);
+                    break;
+                case 3:
+                    p1 = new Point3D(center.X + size, center.Y, center.Z);
+                    p2 = new Point3D(center.X, center.Y, center.Z + size);
+                    p3 = new Point3D(center.X, center.Y + size, center.Z);
+                    break;
+
+                default:
+                    return;
+            }
+
+            SafeAddPoint(mesh, p1);
+            SafeAddPoint(mesh, p2);
+            SafeAddPoint(mesh, p3);
+
+            mesh.TriangleIndices.Add(offset + 0);
+            mesh.TriangleIndices.Add(offset + 1);
+            mesh.TriangleIndices.Add(offset + 2);
+
+            //var Normals = CalculateNormals(new List<Point3D> { p1, p2, p3 }, new List<int> { 0, 1, 2 });
+            //foreach (var normal in Normals)
+            //{
+            //    mesh.Normals.Add(normal);
+            //}
+
+            //mesh.TriangleIndices.Add(offset + 1);
+            //mesh.TriangleIndices.Add(offset + 3);
+            //mesh.TriangleIndices.Add(offset + 0);
+
+            //mesh.TriangleIndices.Add(offset + 2);
+            //mesh.TriangleIndices.Add(offset + 3);
+            //mesh.TriangleIndices.Add(offset + 0);
+
+            //mesh.TriangleIndices.Add(offset + 2);
+            //mesh.TriangleIndices.Add(offset + 3);
+            //mesh.TriangleIndices.Add(offset + 1);
+        }
+
+        public static Vector3DCollection CalculateNormals(IList<Point3D> positions, IList<int> triangleIndices)
+        {
+            var normals = new Vector3DCollection(positions.Count);
+            for (int i = 0; i < positions.Count; i++)
+            {
+                normals.Add(new Vector3D());
+            }
+
+            for (int i = 0; i < triangleIndices.Count; i += 3)
+            {
+                int index0 = triangleIndices[i];
+                int index1 = triangleIndices[i + 1];
+                int index2 = triangleIndices[i + 2];
+                var p0 = positions[index0];
+                var p1 = positions[index1];
+                var p2 = positions[index2];
+                Vector3D u = p1 - p0;
+                Vector3D v = p2 - p0;
+                Vector3D w = Vector3D.CrossProduct(u, v);
+                w.Normalize();
+                normals[index0] += w;
+                normals[index1] += w;
+                normals[index2] += w;
+            }
+
+            for (int i = 0; i < normals.Count; i++)
+            {
+                var w = normals[i];
+                w.Normalize();
+                normals[i] = w;
+            }
+
+            return normals;
         }
 
         private MeshGeometry3D BuildMesh(IEnumerable<Model.Point3D> pointCloud)
@@ -214,7 +296,7 @@ namespace Wpf3DView
 
             foreach (var source in hashPoint.OrderBy(pair => pair.Value))
             {
-                geo.Positions.Add(new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
+                SafeAddPoint(geo, new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
             }
             
             return geo;
@@ -226,14 +308,9 @@ namespace Wpf3DView
 
             foreach(var p in pointCloud)
             {
-                AddCubeToMesh(geo,  p, 2d);
+                AddRandomPolyToMesh(geo,  p, 2d);
             }
-
-            //foreach (var source in hashPoint.OrderBy(pair => pair.Value))
-            //{
-            //    geo.Positions.Add(new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
-            //}
-
+            
             return geo;
         }
 

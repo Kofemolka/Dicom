@@ -6,6 +6,9 @@ using System.Drawing;
 
 namespace Model
 {
+
+    public delegate void LabelMapSetReadyEvent();
+
     public class LabelMapSet
     {
         private readonly BindingList<ILabelMap> _labelMaps = new BindingList<ILabelMap>();
@@ -27,7 +30,7 @@ namespace Model
             Color.PapayaWhip
         };
 
-        public event LabelDataChangedEvent LabelDataChanged;
+        public event LabelMapSetReadyEvent LabelMapSetReady;
 
         public LabelMapSet(Action<Action>  syncInvoker)
         {
@@ -62,32 +65,34 @@ namespace Model
         {
             CreateLabelMap();
 
-            LabelDataChanged?.Invoke();
+            //LabelDataChanged?.Invoke();
         }
 
         public void Delete(ILabelMap labelMap)
         {
             _syncInvoker.Invoke(() => _labelMaps.Remove(labelMap));
             Current = null;
+            LabelMapSetReady?.Invoke();
         }
 
         public void Reset()
         {
             _syncInvoker.Invoke(() => _labelMaps.Clear());
 
-            LabelDataChanged?.Invoke();
+            //LabelDataChanged?.Invoke();
         }
-        
+
+        private static int _newLabelCounter = 1;
         private LabelMap CreateLabelMap()
         {
             var label = new LabelMap()
             {
-                Name = "New Label",
+                Name = "New Label" + _newLabelCounter++,
                 Color = GetNextColor()
             };
             _syncInvoker.Invoke(() => _labelMaps.Add(label));
 
-            label.LabelDataChanged += () => LabelDataChanged?.Invoke();
+            label.LabelDataChanged += () => LabelMapSetReady?.Invoke();
 
             return label;
         }

@@ -28,7 +28,7 @@ namespace DicomImageViewer
             _probe = probe;
 
             _scanData.DataUpdated += () => this.Invoke(new MethodInvoker(ScanDataOnDataUpdated));
-            _labelMapSet.LabelDataChanged += LabelMapOnLabelDataChanged;
+            _labelMapSet.LabelMapSetReady += LabelMapOnLabelDataChanged;
 
             InitializeComponent();
 

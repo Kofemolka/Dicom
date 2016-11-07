@@ -182,7 +182,7 @@ namespace Model
 #if DEBUG
             _debugs.Clear();
 #endif
-            FireUpdate();
+            //FireUpdate();
         }
 
         public event LabelDataChangedEvent LabelDataChanged;

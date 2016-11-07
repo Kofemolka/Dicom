@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using System.IO;
+using System.Threading.Tasks;
 using Model;
 using Point3D = Model.Point3D;
 
@@ -28,7 +29,7 @@ namespace DicomImageViewer.View
 
             host.HostContainer.MouseEnter += (a, b) => _viewPort.Focus();
 
-            _labelMapSet.LabelDataChanged += BuildModel;            
+            _labelMapSet.LabelMapSetReady += BuildModel;            
         }
 
         private void BuildModel()
@@ -37,17 +38,21 @@ namespace DicomImageViewer.View
             {
                 Invoke(new MethodInvoker(() => _viewPort.Reset()));
 
-                foreach (var label in _labelMapSet.All)
+                Task.Factory.StartNew(() =>
                 {
-                    Invoke(new MethodInvoker(() => _viewPort.AddModel(label.GetAll(), new System.Windows.Media.Color()
+                    foreach (var label in _labelMapSet.All)
                     {
-                        A = label.Color.A,
-                        R = label.Color.R,
-                        G = label.Color.G,
-                        B = label.Color.B
-                    },
-                    label.BuildMethod)));
-                }
+                        Invoke(
+                            new MethodInvoker(() => _viewPort.AddModel(label.GetAll(), new System.Windows.Media.Color()
+                            {
+                                A = label.Color.A,
+                                R = label.Color.R,
+                                G = label.Color.G,
+                                B = label.Color.B
+                            },
+                                label.BuildMethod)));
+                    }
+                }, TaskCreationOptions.LongRunning);
 
                 //Save(_labelMap.GetAll());
             }
