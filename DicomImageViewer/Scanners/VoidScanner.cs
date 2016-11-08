@@ -12,11 +12,13 @@ namespace DicomImageViewer.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-        
+
         public int MaxSkip { get; set; } = 6;
         public ushort thUp { get; set; } = 5;
         public ushort thDown { get; set; } = 5;
         public int Rays { get; set; } = 360;
+        public bool OptimizePlanes { get; set; } = true;
+        public int Smoothness { get; set; } = 10;
 
         public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
@@ -80,6 +82,11 @@ namespace DicomImageViewer.Scanners
 
             Task.WaitAll(tasks.ToArray());
 
+            if (OptimizePlanes)
+            {
+                RemoveSharpEdges();
+            }
+
             CalculateVolume();
 
             _labelMap().FireUpdate();
@@ -99,15 +106,15 @@ namespace DicomImageViewer.Scanners
 
                 var area = 0.0d;
 
-                for (int v = 0; v < proj.Count - 1; v++)
+                for (int v = 0; v < proj.Count-1; v++)
                 {
                     var a = Math.Sqrt(Math.Pow(proj[v].X - d.X, 2) + Math.Pow(proj[v].Y - d.Y, 2));
                     var b = Math.Sqrt(Math.Pow(proj[v + 1].X - d.X, 2) + Math.Pow(proj[v + 1].Y - d.Y, 2));
                     var c = Math.Sqrt(Math.Pow(proj[v + 1].X - proj[v].X, 2) + Math.Pow(proj[v + 1].Y - proj[v].Y, 2));
 
-                    var s = (a + b + c)/2;
+                    var s = (a + b + c) / 2;
 
-                    area += Math.Sqrt(s*Math.Abs(s - a)*Math.Abs(s - b)*Math.Abs(s - c));
+                    area += Math.Sqrt(s * Math.Abs(s - a) * Math.Abs(s - b) * Math.Abs(s - c));
                 }
 
                 lock (guard)
@@ -146,24 +153,7 @@ namespace DicomImageViewer.Scanners
 
                 return center;
             }
-            //else
-            //{
-            //    if (heightMap.ContainsKey(point[axis]))
-            //    {
-            //        var mark = heightMap[point[axis]];
 
-            //        var layer = RayCasting(mark, projection, axis, fixProbe);
-
-            //        var center = CalculateLayerCenter(layer.ToList());
-            //        _labelMap.Add(layer);
-
-            //        _labelMap.AddCenter(mark);
-
-            //        return center;
-            //    }
-
-            //    return point;
-            //}
             return point;
         }
 
@@ -172,7 +162,7 @@ namespace DicomImageViewer.Scanners
             int x = 0;
             int y = 0;
 
-            foreach(var mark in layer)
+            foreach (var mark in layer)
             {
                 x += mark.X;
                 y += mark.Y;
@@ -180,18 +170,18 @@ namespace DicomImageViewer.Scanners
 
             return new Point3D(x / layer.Count, y / layer.Count, layer.First().Z);
         }
-        
+
         private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Axis axis, Probe probe)
         {
             var res = new List<Point3D>();
-            
+
             if (projection.Empty)
                 return res;
 
             var scalarPoint = point.To2D(axis);
 
             var rayOffset = Math.PI * 2 / Rays;
-                        
+
             for (int r = 0; r < Rays; r++)
             {
                 var angle = r * rayOffset;
@@ -218,14 +208,12 @@ namespace DicomImageViewer.Scanners
                     foreach (var mark in marks)
                     {
                         map[mark[origianlAxis]] = mark;
-                        
-                        //_labelMap.Add(mark);
                     }
                 }
             }
 
             return map;
-        } 
+        }
 
         private Point2D Cast(Point2D point, double angle, Projection projection, Probe refProbe)
         {
@@ -288,5 +276,41 @@ namespace DicomImageViewer.Scanners
 
             return new Point2D() { X = px, Y = py };
         }
+
+        private void RemoveSharpEdges()
+        {
+            for (int iter = 0; iter < 20; iter++)
+            {
+                bool changes = false;
+
+                Parallel.ForEach(_labelMap().GetCenters(), с =>
+                {
+                    var proj = _labelMap().GetProjection(Axis.Z, с.Z).ToList();
+                    proj.Add(proj.Last());
+
+                    for (int v = 1; v < proj.Count - 1; v++)
+                    {
+                        var l = Math.Sqrt(Math.Pow(proj[v - 1].X - с.X, 2) + Math.Pow(proj[v - 1].Y - с.Y, 2));
+                        var F = Math.Sqrt(Math.Pow(proj[v].X - с.X, 2) + Math.Pow(proj[v].Y - с.Y, 2));
+                        var r = Math.Sqrt(Math.Pow(proj[v + 1].X - с.X, 2) + Math.Pow(proj[v + 1].Y - с.Y, 2));
+
+                        var avrg = Math.Abs((l + r) / 2);
+
+                        if (Math.Abs(F - avrg) > (avrg / Smoothness))
+                        {
+                            proj[v].X = (proj[v - 1].X + proj[v + 1].X) / 2;
+                            proj[v].Y = (proj[v - 1].Y + proj[v + 1].Y) / 2;
+
+                            changes = true;
+                        }
+                    }
+                });
+
+                if(!changes)
+                {
+                    break;
+                }
+            }
+         }
     }
 }

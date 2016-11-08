@@ -37,10 +37,14 @@
             this.trackLowThresh = new System.Windows.Forms.TrackBar();
             this.trackRays = new System.Windows.Forms.TrackBar();
             this.btnRebuild = new System.Windows.Forms.Button();
+            this.chkOptimizePlanes = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.trackSmoothness = new System.Windows.Forms.TrackBar();
             ((System.ComponentModel.ISupportInitialize)(this.trackSkippedPixels)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackHiThresh)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLowThresh)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackRays)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackSmoothness)).BeginInit();
             this.SuspendLayout();
             // 
             // lbHunger
@@ -124,7 +128,7 @@
             // 
             // btnRebuild
             // 
-            this.btnRebuild.Location = new System.Drawing.Point(157, 250);
+            this.btnRebuild.Location = new System.Drawing.Point(167, 321);
             this.btnRebuild.Name = "btnRebuild";
             this.btnRebuild.Size = new System.Drawing.Size(73, 29);
             this.btnRebuild.TabIndex = 32;
@@ -132,10 +136,43 @@
             this.btnRebuild.UseVisualStyleBackColor = true;
             this.btnRebuild.Click += new System.EventHandler(this.btnRebuild_Click);
             // 
+            // chkOptimizePlanes
+            // 
+            this.chkOptimizePlanes.AutoSize = true;
+            this.chkOptimizePlanes.Location = new System.Drawing.Point(16, 321);
+            this.chkOptimizePlanes.Name = "chkOptimizePlanes";
+            this.chkOptimizePlanes.Size = new System.Drawing.Size(101, 17);
+            this.chkOptimizePlanes.TabIndex = 33;
+            this.chkOptimizePlanes.Text = "Optimize Planes";
+            this.chkOptimizePlanes.UseVisualStyleBackColor = true;
+            this.chkOptimizePlanes.CheckedChanged += new System.EventHandler(this.chkOptimizePlanes_CheckedChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(3, 254);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(68, 13);
+            this.label1.TabIndex = 35;
+            this.label1.Text = "Smoothness:";
+            // 
+            // trackSmoothness
+            // 
+            this.trackSmoothness.LargeChange = 20;
+            this.trackSmoothness.Location = new System.Drawing.Point(0, 270);
+            this.trackSmoothness.Maximum = 20;
+            this.trackSmoothness.Name = "trackSmoothness";
+            this.trackSmoothness.Size = new System.Drawing.Size(240, 45);
+            this.trackSmoothness.TabIndex = 34;
+            this.trackSmoothness.ValueChanged += new System.EventHandler(this.trackSmoothness_ValueChanged);
+            // 
             // RayCastingProperties
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.trackSmoothness);
+            this.Controls.Add(this.chkOptimizePlanes);
             this.Controls.Add(this.btnRebuild);
             this.Controls.Add(this.lbHunger);
             this.Controls.Add(this.lbLowThresh);
@@ -146,11 +183,12 @@
             this.Controls.Add(this.trackLowThresh);
             this.Controls.Add(this.trackRays);
             this.Name = "RayCastingProperties";
-            this.Size = new System.Drawing.Size(246, 295);
+            this.Size = new System.Drawing.Size(246, 477);
             ((System.ComponentModel.ISupportInitialize)(this.trackSkippedPixels)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackHiThresh)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackLowThresh)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackRays)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackSmoothness)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,5 +205,8 @@
         private System.Windows.Forms.TrackBar trackLowThresh;
         private System.Windows.Forms.TrackBar trackRays;
         private System.Windows.Forms.Button btnRebuild;
+        private System.Windows.Forms.CheckBox chkOptimizePlanes;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TrackBar trackSmoothness;
     }
 }

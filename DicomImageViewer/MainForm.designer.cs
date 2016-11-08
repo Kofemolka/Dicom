@@ -40,13 +40,13 @@ namespace DicomImageViewer
             this.progBar = new System.Windows.Forms.ProgressBar();
             this.lbDensity = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.btnExport = new System.Windows.Forms.Button();
             this.tabsScanners = new System.Windows.Forms.TabControl();
             this.tabRayScanner = new System.Windows.Forms.TabPage();
-            this.rayCastingProperties = new DicomImageViewer.View.RayCastingProperties();
             this.tabThresh = new System.Windows.Forms.TabPage();
+            this.rayCastingProperties = new DicomImageViewer.View.RayCastingProperties();
             this.thresholdProperties = new DicomImageViewer.View.ThresholdProperties();
             this.labelMapView = new DicomImageViewer.View.LabelMapView();
-            this.btnExport = new System.Windows.Forms.Button();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -168,63 +168,6 @@ namespace DicomImageViewer
             this.panel1.Size = new System.Drawing.Size(280, 763);
             this.panel1.TabIndex = 18;
             // 
-            // tabsScanners
-            // 
-            this.tabsScanners.Controls.Add(this.tabRayScanner);
-            this.tabsScanners.Controls.Add(this.tabThresh);
-            this.tabsScanners.Location = new System.Drawing.Point(11, 108);
-            this.tabsScanners.Name = "tabsScanners";
-            this.tabsScanners.SelectedIndex = 0;
-            this.tabsScanners.Size = new System.Drawing.Size(262, 320);
-            this.tabsScanners.TabIndex = 25;
-            // 
-            // tabRayScanner
-            // 
-            this.tabRayScanner.Controls.Add(this.rayCastingProperties);
-            this.tabRayScanner.Location = new System.Drawing.Point(4, 22);
-            this.tabRayScanner.Name = "tabRayScanner";
-            this.tabRayScanner.Padding = new System.Windows.Forms.Padding(3);
-            this.tabRayScanner.Size = new System.Drawing.Size(254, 294);
-            this.tabRayScanner.TabIndex = 0;
-            this.tabRayScanner.Text = "Rays";
-            this.tabRayScanner.UseVisualStyleBackColor = true;
-            // 
-            // rayCastingProperties
-            // 
-            this.rayCastingProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.rayCastingProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rayCastingProperties.Location = new System.Drawing.Point(3, 3);
-            this.rayCastingProperties.Name = "rayCastingProperties";
-            this.rayCastingProperties.Size = new System.Drawing.Size(248, 288);
-            this.rayCastingProperties.TabIndex = 0;
-            // 
-            // tabThresh
-            // 
-            this.tabThresh.Controls.Add(this.thresholdProperties);
-            this.tabThresh.Location = new System.Drawing.Point(4, 22);
-            this.tabThresh.Name = "tabThresh";
-            this.tabThresh.Padding = new System.Windows.Forms.Padding(3);
-            this.tabThresh.Size = new System.Drawing.Size(254, 294);
-            this.tabThresh.TabIndex = 1;
-            this.tabThresh.Text = "Threashold";
-            this.tabThresh.UseVisualStyleBackColor = true;
-            // 
-            // thresholdProperties
-            // 
-            this.thresholdProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.thresholdProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.thresholdProperties.Location = new System.Drawing.Point(3, 3);
-            this.thresholdProperties.Name = "thresholdProperties";
-            this.thresholdProperties.Size = new System.Drawing.Size(248, 288);
-            this.thresholdProperties.TabIndex = 0;
-            // 
-            // labelMapView
-            // 
-            this.labelMapView.Location = new System.Drawing.Point(11, 434);
-            this.labelMapView.Name = "labelMapView";
-            this.labelMapView.Size = new System.Drawing.Size(255, 257);
-            this.labelMapView.TabIndex = 24;
-            // 
             // btnExport
             // 
             this.btnExport.Location = new System.Drawing.Point(213, 11);
@@ -234,6 +177,63 @@ namespace DicomImageViewer
             this.btnExport.Text = "Export";
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // tabsScanners
+            // 
+            this.tabsScanners.Controls.Add(this.tabRayScanner);
+            this.tabsScanners.Controls.Add(this.tabThresh);
+            this.tabsScanners.Location = new System.Drawing.Point(11, 108);
+            this.tabsScanners.Name = "tabsScanners";
+            this.tabsScanners.SelectedIndex = 0;
+            this.tabsScanners.Size = new System.Drawing.Size(262, 379);
+            this.tabsScanners.TabIndex = 25;
+            // 
+            // tabRayScanner
+            // 
+            this.tabRayScanner.Controls.Add(this.rayCastingProperties);
+            this.tabRayScanner.Location = new System.Drawing.Point(4, 22);
+            this.tabRayScanner.Name = "tabRayScanner";
+            this.tabRayScanner.Padding = new System.Windows.Forms.Padding(3);
+            this.tabRayScanner.Size = new System.Drawing.Size(254, 353);
+            this.tabRayScanner.TabIndex = 0;
+            this.tabRayScanner.Text = "Rays";
+            this.tabRayScanner.UseVisualStyleBackColor = true;
+            // 
+            // tabThresh
+            // 
+            this.tabThresh.Controls.Add(this.thresholdProperties);
+            this.tabThresh.Location = new System.Drawing.Point(4, 22);
+            this.tabThresh.Name = "tabThresh";
+            this.tabThresh.Padding = new System.Windows.Forms.Padding(3);
+            this.tabThresh.Size = new System.Drawing.Size(254, 353);
+            this.tabThresh.TabIndex = 1;
+            this.tabThresh.Text = "Threashold";
+            this.tabThresh.UseVisualStyleBackColor = true;
+            // 
+            // rayCastingProperties
+            // 
+            this.rayCastingProperties.BackColor = System.Drawing.SystemColors.Control;
+            this.rayCastingProperties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rayCastingProperties.Location = new System.Drawing.Point(3, 3);
+            this.rayCastingProperties.Name = "rayCastingProperties";
+            this.rayCastingProperties.Size = new System.Drawing.Size(248, 347);
+            this.rayCastingProperties.TabIndex = 0;
+            // 
+            // thresholdProperties
+            // 
+            this.thresholdProperties.BackColor = System.Drawing.SystemColors.Control;
+            this.thresholdProperties.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.thresholdProperties.Location = new System.Drawing.Point(3, 3);
+            this.thresholdProperties.Name = "thresholdProperties";
+            this.thresholdProperties.Size = new System.Drawing.Size(248, 347);
+            this.thresholdProperties.TabIndex = 0;
+            // 
+            // labelMapView
+            // 
+            this.labelMapView.Location = new System.Drawing.Point(11, 493);
+            this.labelMapView.Name = "labelMapView";
+            this.labelMapView.Size = new System.Drawing.Size(255, 257);
+            this.labelMapView.TabIndex = 24;
             // 
             // MainForm
             // 

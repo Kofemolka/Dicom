@@ -30,6 +30,8 @@ namespace DicomImageViewer.View
             trackLowThresh.Value = VoidScanner.thDown;
             trackSkippedPixels.Value = VoidScanner.MaxSkip;
             trackRays.Value = VoidScanner.Rays;
+            trackSmoothness.Value = VoidScanner.Smoothness;
+            chkOptimizePlanes.Checked = VoidScanner.OptimizePlanes;
 
             Parent.Tag = this;
         }
@@ -87,6 +89,16 @@ namespace DicomImageViewer.View
 
                 Cursor = Cursors.Default;
             }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void chkOptimizePlanes_CheckedChanged(object sender, EventArgs e)
+        {
+            VoidScanner.OptimizePlanes = chkOptimizePlanes.Checked;
+        }
+
+        private void trackSmoothness_ValueChanged(object sender, EventArgs e)
+        {
+            VoidScanner.Smoothness = trackSmoothness.Value;
         }
     }
 }
