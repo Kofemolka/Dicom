@@ -11,15 +11,9 @@ namespace DicomImageViewer.Export
         {
             using (var writer = new BinaryWriter(stream))
             {
-                int triangleIndicesCount = 0;
                 var meshGeo = model.Geometry as MeshGeometry3D;
-
-                if (meshGeo != null)
-                {
-                    triangleIndicesCount = meshGeo.Positions.Count;
-                }
-
-                ExportHeader(writer, triangleIndicesCount/3);
+                
+                ExportHeader(writer, meshGeo.TriangleIndices.Count/3);
 
                 ExportModel(writer, model, Transform3D.Identity);
             }
@@ -51,7 +45,7 @@ namespace DicomImageViewer.Export
             matrix.OffsetX = 0;
             matrix.OffsetY = 0;
             matrix.OffsetZ = 0;
-            var normalTransform = new MatrixTransform3D(matrix);
+            var normalTransform = new MatrixTransform3D();
 
             for (int i = 0; i < mesh.TriangleIndices.Count; i += 3)
             {
