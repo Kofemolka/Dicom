@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using System.IO;
 using System.Threading.Tasks;
+using DicomImageViewer.Export;
 using Model;
 using Point3D = Model.Point3D;
 
@@ -49,7 +50,20 @@ namespace DicomImageViewer.View
         {
             Invoke(new MethodInvoker(() => _viewPort.RemoveLabel(label)));
         }
-        
+
+        public void Export(string path)
+        {
+            foreach (var namedModel in _viewPort.GetAllModels())
+            {
+                var fileName = Path.Combine(path, namedModel.Key+".stl");
+
+                using (var stream = new System.IO.FileStream(fileName, FileMode.Create))
+                {
+                    StlExporter.Export(namedModel.Value, stream);
+                }   
+            }
+        }
+
         private void Save(IEnumerable<Point3D> points)
         {
             using (StreamWriter writetext = new StreamWriter("points.txt"))
@@ -60,7 +74,7 @@ namespace DicomImageViewer.View
                 }
             }
         }
-
+        
         public void Load()
         {
             try

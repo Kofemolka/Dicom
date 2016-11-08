@@ -10,17 +10,19 @@ namespace DicomImageViewer.Scanners
     public class VoidScanner
     {
         private readonly IScanData _scanData;
-        private readonly Func<ILabelMap> _labelMap;               
-
+        private readonly Func<ILabelMap> _labelMap;
+        private readonly ILookupTable _lookupTable;
+        
         public int MaxSkip { get; set; } = 6;
-        public ushort thUp { get; set; } = 135;
-        public ushort thDown { get; set; } = 370;
+        public ushort thUp { get; set; } = 5;
+        public ushort thDown { get; set; } = 5;
         public int Rays { get; set; } = 360;
 
-        public VoidScanner(IScanData scanData, Func<ILabelMap> labelMap)
+        public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
             _scanData = scanData;
             _labelMap = labelMap;
+            _lookupTable = lookupTable;
         }
 
         public void Build(Point3D point, Axis axis, IProgress progress)
@@ -28,7 +30,7 @@ namespace DicomImageViewer.Scanners
             _labelMap().Reset();
             _labelMap().BuildMethod = BuildMethod.RayCasting;
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, thUp, thDown);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, thUp, thDown);
 
             var heightMap = BuildHeightMap(point, axis, fixProbe);
             var maxHeight = heightMap.Keys.Max();
@@ -131,7 +133,7 @@ namespace DicomImageViewer.Scanners
                 return point;
 
             var scalarPoint = point.To2D(axis);
-            ushort probe = projection.Pixels[scalarPoint.X, scalarPoint.Y];
+            ushort probe = _lookupTable.Map(projection.Pixels[scalarPoint.X, scalarPoint.Y]);
 
             if (fixProbe.InRange(probe))
             {
@@ -268,7 +270,7 @@ namespace DicomImageViewer.Scanners
                     break;
                 }
 
-                var probe = projection.Pixels[px, py];
+                var probe = _lookupTable.Map(projection.Pixels[px, py]);
                 if (probe >= refProbe.Max || probe <= refProbe.Min)
                 {
                     skipped++;

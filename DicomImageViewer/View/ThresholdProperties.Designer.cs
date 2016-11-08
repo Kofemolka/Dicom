@@ -36,7 +36,7 @@
             // 
             // btnRebuild
             // 
-            this.btnRebuild.Location = new System.Drawing.Point(167, 54);
+            this.btnRebuild.Location = new System.Drawing.Point(167, 67);
             this.btnRebuild.Name = "btnRebuild";
             this.btnRebuild.Size = new System.Drawing.Size(73, 29);
             this.btnRebuild.TabIndex = 35;
@@ -57,10 +57,9 @@
             // 
             this.trackThresh.LargeChange = 20;
             this.trackThresh.Location = new System.Drawing.Point(0, 16);
-            this.trackThresh.Maximum = 150;
+            this.trackThresh.Maximum = 5;
             this.trackThresh.Name = "trackThresh";
             this.trackThresh.Size = new System.Drawing.Size(240, 45);
-            this.trackThresh.SmallChange = 5;
             this.trackThresh.TabIndex = 33;
             this.trackThresh.ValueChanged += new System.EventHandler(this.trackThresh_ValueChanged);
             // 

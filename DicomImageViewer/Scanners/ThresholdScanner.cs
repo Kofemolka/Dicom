@@ -10,13 +10,15 @@ namespace DicomImageViewer.Scanners
     {
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
+        private readonly ILookupTable _lookupTable;
 
-        public ushort Threshold { get; set; } = 100;
+        public ushort Threshold { get; set; } = 2;
 
-        public ThresholdScanner(IScanData scanData, Func<ILabelMap> labelMap)
+        public ThresholdScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
             _scanData = scanData;
             _labelMap = labelMap;
+            _lookupTable = lookupTable;
         }
 
         public void Build(Point3D point, IProgress progress)
@@ -28,7 +30,7 @@ namespace DicomImageViewer.Scanners
             progress.Max(_scanData.GetAxisCutCount(Axis.Z));
             progress.Reset();
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, Threshold, Threshold);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Threshold, Threshold);
             
             int volume = 0;
             Parallel.ForEach(_scanData.GetAllProjections(Axis.Z), (proj, state, z) =>
@@ -37,7 +39,7 @@ namespace DicomImageViewer.Scanners
                 {
                     for (int y = 0; y < proj.Height; y++)
                     {
-                        if (fixProbe.InRange(proj.Pixels[x, y]))
+                        if (fixProbe.InRange(_lookupTable.Map(proj.Pixels[x, y])))
                         {
                             _labelMap().Add(new Point3D(x, y, (int)z));
                             Interlocked.Increment(ref volume);

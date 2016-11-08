@@ -93,6 +93,9 @@
     <Compile Include="DrawSurface.Designer.cs">
       <DependentUpon>DrawSurface.cs</DependentUpon>
     </Compile>
+    <Compile Include="Export\Extensions.cs" />
+    <Compile Include="Export\LabelInfoExporter.cs" />
+    <Compile Include="Export\StlExporter.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

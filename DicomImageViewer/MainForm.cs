@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DicomImageViewer.Scanners;
 using System.Windows.Forms.Integration;
+using DicomImageViewer.Export;
 using Model;
 using Model.Utils;
 using DicomImageViewer.View;
@@ -16,7 +17,7 @@ namespace DicomImageViewer
 {
     public enum ImageBitsPerPixel { Eight, Sixteen, TwentyFour };
     public enum ViewSettings { Zoom1_1, ZoomToFit };
-   
+
     public partial class MainForm : Form, IProbe
     {
         private ProjectionView projectionViewX;
@@ -32,21 +33,21 @@ namespace DicomImageViewer
         private readonly DicomDecoder _dd;
 
         private View.View3D _3dView;
-               
-        double winCentre;
-        double winWidth;
-       
-        int maxPixelValue;    // Updated July 2012
-        int minPixelValue;
-        
+
+        private double winCentre;
+        private double winWidth;
+
+        private int maxPixelValue; // Updated July 2012
+        private int minPixelValue;
+
         public View.View3D View3D => _3dView;
 
         public MainForm()
         {
             _labelMapSet = new LabelMapSet(action => this.Invoke(action));
             _lookupTable = new LookupTable(_scanSet);
-            _voidScanner = new VoidScanner(_scanSet, () => _labelMapSet.Current);
-            _threshScanner = new ThresholdScanner(_scanSet, () => _labelMapSet.Current);
+            _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
+            _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
 
             InitializeComponent();
 
@@ -63,11 +64,11 @@ namespace DicomImageViewer
 
             projectionViewX = new ProjectionView(Axis.X, _scanSet, _lookupTable, _labelMapSet, this);
             projectionViewY = new ProjectionView(Axis.Y, _scanSet, _lookupTable, _labelMapSet, this);
-            projectionViewZ = new ProjectionView(Axis.Z, _scanSet, _lookupTable, _labelMapSet, this);           
+            projectionViewZ = new ProjectionView(Axis.Z, _scanSet, _lookupTable, _labelMapSet, this);
 
             maxPixelValue = 0;
             minPixelValue = 65535;
-            
+
             InitUI();
         }
 
@@ -108,17 +109,17 @@ namespace DicomImageViewer
         }
 
         private void UpdateScanInfo()
-        {           
+        {
             winCentre = _scanSet.windowCentre;
             winWidth = _scanSet.windowWidth;
-                       
+
             //bnSave.Enabled = true;
             bnTags.Enabled = true;
-                       
+
             Text = "DICOM Image Viewer: ";
 
             _scanSet.MinMaxDencity(out minPixelValue, out maxPixelValue);
-          
+
             if (_scanSet.signedImage)
             {
                 winCentre -= short.MinValue;
@@ -132,10 +133,10 @@ namespace DicomImageViewer
             if ((winCentre == 0) ||
                 (minPixelValue > winCentre) || (maxPixelValue < winCentre))
             {
-                winCentre = (maxPixelValue + minPixelValue) / 2;
+                winCentre = (maxPixelValue + minPixelValue)/2;
             }
         }
-        
+
         private void bnTags_Click(object sender, EventArgs e)
         {
             var dtg = new DicomTagsForm();
@@ -146,14 +147,14 @@ namespace DicomImageViewer
         private void MainForm_Load(object sender, EventArgs e)
         {
             _3dView.Load();
-        }              
+        }
 
         public void UpdateWindowLevel(int winWidth, int winCentre, ImageBitsPerPixel bpp)
         {
-            int winMin = Convert.ToInt32(winCentre - 0.5 * winWidth);
-            int winMax = winMin + winWidth;            
+            int winMin = Convert.ToInt32(winCentre - 0.5*winWidth);
+            int winMax = winMin + winWidth;
         }
-  
+
         private void btnOpenSeries_Click(object sender, EventArgs e)
         {
             using (var dlg = new FolderBrowserDialog())
@@ -209,7 +210,7 @@ namespace DicomImageViewer
 
                 progress.Tick();
             });
-        }              
+        }
 
         public void Dencity(ushort density)
         {
@@ -220,10 +221,25 @@ namespace DicomImageViewer
         {
             var scanProp = (tabsScanners.SelectedTab.Tag as IScannerProperties);
 
-            if(scanProp != null)
+            if (scanProp != null)
             {
                 scanProp.Scan(point);
             }
-        }        
+        }
+
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new FolderBrowserDialog())
+            {
+                dlg.SelectedPath = Properties.Settings.Default.LastFolder;
+
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    LabelInfoExporter.Export(_labelMapSet, Path.Combine(dlg.SelectedPath, "Labels.csv"));
+
+                    _3dView.Export(dlg.SelectedPath);
+                }
+            }
+        }
     }
 }

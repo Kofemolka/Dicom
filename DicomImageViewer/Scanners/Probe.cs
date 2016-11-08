@@ -13,7 +13,7 @@ namespace DicomImageViewer.Scanners
             return val >= Min && val <= Max;
         }
 
-        public static Probe GetStartingProbe(Point3D point, IScanData scanData, ushort thUp = 0, ushort thDown =  0)
+        public static Probe GetStartingProbe(Point3D point, IScanData scanData, ILookupTable lookupTable, ushort thUp = 0, ushort thDown =  0)
         {
             var projection = scanData.GetProjection(Axis.Z, point[Axis.Z]);
 
@@ -34,7 +34,7 @@ namespace DicomImageViewer.Scanners
                     y < Math.Min(projection.Height, scalarPoint.Y + probeHalfWidth);
                     y++)
                 {
-                    probe += projection.Pixels[x, y];
+                    probe += lookupTable.Map(projection.Pixels[x, y]);
                     probeCount++;
                 }
             }

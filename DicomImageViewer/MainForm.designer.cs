@@ -46,6 +46,7 @@ namespace DicomImageViewer
             this.tabThresh = new System.Windows.Forms.TabPage();
             this.thresholdProperties = new DicomImageViewer.View.ThresholdProperties();
             this.labelMapView = new DicomImageViewer.View.LabelMapView();
+            this.btnExport = new System.Windows.Forms.Button();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -154,6 +155,7 @@ namespace DicomImageViewer
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.btnExport);
             this.panel1.Controls.Add(this.tabsScanners);
             this.panel1.Controls.Add(this.labelMapView);
             this.panel1.Controls.Add(this.lbDensity);
@@ -223,6 +225,16 @@ namespace DicomImageViewer
             this.labelMapView.Size = new System.Drawing.Size(255, 257);
             this.labelMapView.TabIndex = 24;
             // 
+            // btnExport
+            // 
+            this.btnExport.Location = new System.Drawing.Point(213, 11);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(56, 28);
+            this.btnExport.TabIndex = 26;
+            this.btnExport.Text = "Export";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -264,6 +276,7 @@ namespace DicomImageViewer
         private System.Windows.Forms.TabPage tabThresh;
         private View.RayCastingProperties rayCastingProperties;
         private View.ThresholdProperties thresholdProperties;
+        private System.Windows.Forms.Button btnExport;
     }
 }
 

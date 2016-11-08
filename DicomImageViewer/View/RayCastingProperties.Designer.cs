@@ -92,10 +92,9 @@
             // 
             this.trackHiThresh.LargeChange = 20;
             this.trackHiThresh.Location = new System.Drawing.Point(0, 80);
-            this.trackHiThresh.Maximum = 1000;
+            this.trackHiThresh.Maximum = 25;
             this.trackHiThresh.Name = "trackHiThresh";
             this.trackHiThresh.Size = new System.Drawing.Size(240, 45);
-            this.trackHiThresh.SmallChange = 5;
             this.trackHiThresh.TabIndex = 26;
             this.trackHiThresh.ValueChanged += new System.EventHandler(this.trackHiThresh_ValueChanged);
             // 
@@ -103,10 +102,9 @@
             // 
             this.trackLowThresh.LargeChange = 20;
             this.trackLowThresh.Location = new System.Drawing.Point(0, 144);
-            this.trackLowThresh.Maximum = 1000;
+            this.trackLowThresh.Maximum = 25;
             this.trackLowThresh.Name = "trackLowThresh";
             this.trackLowThresh.Size = new System.Drawing.Size(240, 45);
-            this.trackLowThresh.SmallChange = 5;
             this.trackLowThresh.TabIndex = 25;
             this.trackLowThresh.ValueChanged += new System.EventHandler(this.trackLowThresh_ValueChanged);
             // 

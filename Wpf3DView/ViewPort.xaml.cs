@@ -19,6 +19,8 @@ namespace Wpf3DView
         private readonly RotateTransform3D _rotateTransform3D = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0));
         private readonly TranslateTransform3D _translateTransform3D = new TranslateTransform3D(0, 0, 0);
 
+        private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
+
         public Trackball Trackball => _trackball;
 
         private long _vertexCount = 0;
@@ -34,6 +36,12 @@ namespace Wpf3DView
             _trackball.Slaves.Add(myViewport);
             _trackball.Enabled = true;            
         }
+
+        public IEnumerable<KeyValuePair<string, GeometryModel3D>> GetAllModels()
+        {
+            return _models;
+        }
+
 
         public void Reset()
         {
@@ -125,8 +133,6 @@ namespace Wpf3DView
             _camera.LookDirection = new Vector3D(center.X, center.Y, center.Z);
             _camera.UpDirection = new Vector3D(0, 0, 1);
         }
-
-        private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
         
         private Point3D CalculateCenter()
         {
@@ -198,19 +204,19 @@ namespace Wpf3DView
             mesh.Positions.Add(point);
         }
 
-        private static short RandomPolyCounter = 0;
+        private static short _randomPolyCounter = 0;
         private void AddRandomPolyToMesh(MeshGeometry3D mesh, Model.Point3D center, double size)
         {
             int offset = mesh.Positions.Count;
             
-            if (++RandomPolyCounter > 3)
+            if (++_randomPolyCounter > 3)
             {
-                RandomPolyCounter = 0;
+                _randomPolyCounter = 0;
             }
 
             Point3D p1, p2, p3;
 
-            switch (RandomPolyCounter)
+            switch (_randomPolyCounter)
             {
                 case 0:
                     p1 = new Point3D(center.X, center.Y, center.Z);
@@ -244,61 +250,8 @@ namespace Wpf3DView
             mesh.TriangleIndices.Add(offset + 0);
             mesh.TriangleIndices.Add(offset + 1);
             mesh.TriangleIndices.Add(offset + 2);
-
-            //var Normals = CalculateNormals(new List<Point3D> { p1, p2, p3 }, new List<int> { 0, 1, 2 });
-            //foreach (var normal in Normals)
-            //{
-            //    mesh.Normals.Add(normal);
-            //}
-
-            //mesh.TriangleIndices.Add(offset + 1);
-            //mesh.TriangleIndices.Add(offset + 3);
-            //mesh.TriangleIndices.Add(offset + 0);
-
-            //mesh.TriangleIndices.Add(offset + 2);
-            //mesh.TriangleIndices.Add(offset + 3);
-            //mesh.TriangleIndices.Add(offset + 0);
-
-            //mesh.TriangleIndices.Add(offset + 2);
-            //mesh.TriangleIndices.Add(offset + 3);
-            //mesh.TriangleIndices.Add(offset + 1);
         }
-
-        public static Vector3DCollection CalculateNormals(IList<Point3D> positions, IList<int> triangleIndices)
-        {
-            var normals = new Vector3DCollection(positions.Count);
-            for (int i = 0; i < positions.Count; i++)
-            {
-                normals.Add(new Vector3D());
-            }
-
-            for (int i = 0; i < triangleIndices.Count; i += 3)
-            {
-                int index0 = triangleIndices[i];
-                int index1 = triangleIndices[i + 1];
-                int index2 = triangleIndices[i + 2];
-                var p0 = positions[index0];
-                var p1 = positions[index1];
-                var p2 = positions[index2];
-                Vector3D u = p1 - p0;
-                Vector3D v = p2 - p0;
-                Vector3D w = Vector3D.CrossProduct(u, v);
-                w.Normalize();
-                normals[index0] += w;
-                normals[index1] += w;
-                normals[index2] += w;
-            }
-
-            for (int i = 0; i < normals.Count; i++)
-            {
-                var w = normals[i];
-                w.Normalize();
-                normals[i] = w;
-            }
-
-            return normals;
-        }
-
+        
         private MeshGeometry3D BuildMesh(IEnumerable<Model.Point3D> pointCloud)
         {
             var zOrderCloud = new Dictionary<int, List<Model.Point3D>>();
