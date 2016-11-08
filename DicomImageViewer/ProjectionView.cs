@@ -28,12 +28,13 @@ namespace DicomImageViewer
             _probe = probe;
 
             _scanData.DataUpdated += () => this.Invoke(new MethodInvoker(ScanDataOnDataUpdated));
-            _labelMapSet.LabelMapSetReady += LabelMapOnLabelDataChanged;
+            _labelMapSet.LabelMapUpdated += LabelMapOnLabelDataChanged;
+            _labelMapSet.LabelMapDeleted += LabelMapOnLabelDataChanged;
+            _labelMapSet.LabelMapSetReset += () => surface.Invalidate();
 
             InitializeComponent();
-
-            
         }
+
         protected override CreateParams CreateParams
         {
             get
@@ -44,7 +45,7 @@ namespace DicomImageViewer
             }
         }
 
-        private void LabelMapOnLabelDataChanged()
+        private void LabelMapOnLabelDataChanged(ILabelMap label)
         {
             surface.Invalidate();
         }

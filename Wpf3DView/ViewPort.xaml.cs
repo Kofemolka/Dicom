@@ -3,6 +3,8 @@ using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
+using Model;
+using Point3D = System.Windows.Media.Media3D.Point3D;
 
 namespace Wpf3DView
 {    
@@ -36,6 +38,7 @@ namespace Wpf3DView
         public void Reset()
         {
             _modelGroup.Children.Clear();
+            _models.Clear();
 
             DirectionalLight DirLight1 = new DirectionalLight();
             DirLight1.Color = Colors.White;
@@ -51,30 +54,68 @@ namespace Wpf3DView
             _vertexCount = 0;
         }
 
-        public void AddModel(IEnumerable<Model.Point3D> points, Color color, Model.BuildMethod buildMethod)
+        public void RemoveLabel(ILabelMap label)
+        {
+            GeometryModel3D model;
+            if (_models.TryGetValue(label.Name, out model))
+            {
+                _modelGroup.Children.Remove(model);
+                _models.Remove(label.Name);
+            }
+
+            UpdateView();
+        }
+
+        public void UpdateLabel(ILabelMap label)
+        {
+            GeometryModel3D model;
+            if (!_models.TryGetValue(label.Name, out model))
+            {
+                model = new GeometryModel3D();
+                _models.Add(label.Name, model);
+                _modelGroup.Children.Add(model);
+            }
+
+            model.Geometry = BuildModelGeo(label);
+            InitModelProperties(model, label);
+
+            UpdateView();
+        }
+
+        private MeshGeometry3D BuildModelGeo(ILabelMap label)
         {
             MeshGeometry3D geo = null;
-            switch(buildMethod)
+            switch (label.BuildMethod)
             {
                 case Model.BuildMethod.RayCasting:
-                    geo = BuildMesh(points);
+                    geo = BuildMesh(label.GetAll());
                     break;
 
                 case Model.BuildMethod.Threshold:
-                    geo = BuildPointCloud(points);
-                    color.A = 125;
+                    geo = BuildPointCloud(label.GetAll());
                     break;
 
                 default:
-                    return;
+                    return null;
             }
-                        
-            var model = new GeometryModel3D();
+
+            return geo;
+        }
+
+        private void InitModelProperties(GeometryModel3D model, ILabelMap label)
+        {
+            Color color = Color.FromRgb(label.Color.R, label.Color.G, label.Color.B);
+
+            if (label.BuildMethod == BuildMethod.Threshold)
+            {
+                color.A = 125;
+            }
+
             model.Material = new DiffuseMaterial(new SolidColorBrush(color));
+        }
 
-            model.Geometry = geo;
-            _modelGroup.Children.Add(model);
-
+        private void UpdateView()
+        {
             var center = CalculateCenter();
 
             _scaleTransform3D.CenterX = _rotateTransform3D.CenterX = center.X;
@@ -83,11 +124,10 @@ namespace Wpf3DView
 
             _camera.LookDirection = new Vector3D(center.X, center.Y, center.Z);
             _camera.UpDirection = new Vector3D(0, 0, 1);
-                        
-           
-            myViewport.UpdateLayout();
-        }        
+        }
 
+        private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
+        
         private Point3D CalculateCenter()
         {
             var center = new Point3D();

@@ -6,6 +6,10 @@ using System.Drawing;
 
 namespace Model
 {
+    public delegate void LabelMapAddedEvent(ILabelMap label);
+    public delegate void LabelMapUpdatedEvent(ILabelMap label);
+    public delegate void LabelMapDeletedEvent(ILabelMap label);
+    public delegate void LabelMapSetResetEvent();
 
     public delegate void LabelMapSetReadyEvent();
 
@@ -29,8 +33,11 @@ namespace Model
             Color.Olive,
             Color.PapayaWhip
         };
-
-        public event LabelMapSetReadyEvent LabelMapSetReady;
+        
+        public event LabelMapAddedEvent LabelMapAdded;
+        public event LabelMapUpdatedEvent LabelMapUpdated;
+        public event LabelMapDeletedEvent LabelMapDeleted;
+        public event LabelMapSetResetEvent LabelMapSetReset;
 
         public LabelMapSet(Action<Action>  syncInvoker)
         {
@@ -56,30 +63,30 @@ namespace Model
             set
             {
                 _current = value;
-               // LabelDataChanged?.Invoke();
             }
         }
         
 
         public void Add()
         {
-            CreateLabelMap();
+            var label = CreateLabelMap();
 
-            //LabelDataChanged?.Invoke();
+            LabelMapAdded?.Invoke(label);
         }
 
         public void Delete(ILabelMap labelMap)
         {
             _syncInvoker.Invoke(() => _labelMaps.Remove(labelMap));
             Current = null;
-            LabelMapSetReady?.Invoke();
+            
+            LabelMapDeleted?.Invoke(labelMap);
         }
 
         public void Reset()
         {
             _syncInvoker.Invoke(() => _labelMaps.Clear());
 
-            //LabelDataChanged?.Invoke();
+            LabelMapSetReset?.Invoke();
         }
 
         private static int _newLabelCounter = 1;
@@ -92,7 +99,7 @@ namespace Model
             };
             _syncInvoker.Invoke(() => _labelMaps.Add(label));
 
-            label.LabelDataChanged += () => LabelMapSetReady?.Invoke();
+            label.LabelDataChanged += () => LabelMapUpdated?.Invoke(label);
 
             return label;
         }

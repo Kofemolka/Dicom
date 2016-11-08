@@ -29,39 +29,27 @@ namespace DicomImageViewer.View
 
             host.HostContainer.MouseEnter += (a, b) => _viewPort.Focus();
 
-            _labelMapSet.LabelMapSetReady += BuildModel;            
+            _labelMapSet.LabelMapAdded += LabelMapUpdated;
+            _labelMapSet.LabelMapUpdated += LabelMapUpdated;
+            _labelMapSet.LabelMapDeleted += LabelMapDeleted;
+            _labelMapSet.LabelMapSetReset += LabelMapSetReset;
         }
 
-        private void BuildModel()
+        private void LabelMapSetReset()
         {
-            try
-            {
-                Invoke(new MethodInvoker(() => _viewPort.Reset()));
-
-                Task.Factory.StartNew(() =>
-                {
-                    foreach (var label in _labelMapSet.All)
-                    {
-                        Invoke(
-                            new MethodInvoker(() => _viewPort.AddModel(label.GetAll(), new System.Windows.Media.Color()
-                            {
-                                A = label.Color.A,
-                                R = label.Color.R,
-                                G = label.Color.G,
-                                B = label.Color.B
-                            },
-                                label.BuildMethod)));
-                    }
-                }, TaskCreationOptions.LongRunning);
-
-                //Save(_labelMap.GetAll());
-            }
-            catch (Exception e)
-            {
-                
-            }
+            Invoke(new MethodInvoker(() => _viewPort.Reset()));
         }
 
+        private void LabelMapUpdated(ILabelMap label)
+        {
+            Invoke(new MethodInvoker(() => _viewPort.UpdateLabel(label)));
+        }
+
+        private void LabelMapDeleted(ILabelMap label)
+        {
+            Invoke(new MethodInvoker(() => _viewPort.RemoveLabel(label)));
+        }
+        
         private void Save(IEnumerable<Point3D> points)
         {
             using (StreamWriter writetext = new StreamWriter("points.txt"))

@@ -535,6 +535,7 @@ namespace DicomImageViewer
 
             if (GetString(4) != DICM)
             {
+                return false;
                 // This is for reading older DICOM files (Before 3.0)
                 // Seek from the beginning of the file
                 file.BaseStream.Seek(0, SeekOrigin.Begin);
