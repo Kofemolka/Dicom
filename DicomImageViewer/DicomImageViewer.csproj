@@ -124,6 +124,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="View\EdgeFinderProperties.resx">
+      <DependentUpon>EdgeFinderProperties.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\LabelMapView.resx">
       <DependentUpon>LabelMapView.cs</DependentUpon>
     </EmbeddedResource>
@@ -155,9 +158,16 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Scanners\EdgeFinder.cs" />
     <Compile Include="Scanners\Probe.cs" />
     <Compile Include="Scanners\ThresholdScanner.cs" />
     <Compile Include="Scanners\VoidScanner.cs" />
+    <Compile Include="View\EdgeFinderProperties.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\EdgeFinderProperties.Designer.cs">
+      <DependentUpon>EdgeFinderProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="View\IScannerProperties.cs" />
     <Compile Include="View\LabelMapView.cs">
       <SubType>UserControl</SubType>

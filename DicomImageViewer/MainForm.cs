@@ -29,6 +29,7 @@ namespace DicomImageViewer
         private readonly LabelMapSet _labelMapSet;
         private readonly VoidScanner _voidScanner;
         private readonly ThresholdScanner _threshScanner;
+        private readonly EdgeFinder _edgeScanner;
 
         private readonly DicomDecoder _dd;
 
@@ -48,11 +49,13 @@ namespace DicomImageViewer
             _lookupTable = new LookupTable(_scanSet);
             _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
             _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
+            _edgeScanner = new EdgeFinder(_scanSet, _lookupTable, () => _labelMapSet.Current);
 
             InitializeComponent();
 
             rayCastingProperties.Init(_voidScanner, new Progress(progBar), this);
             thresholdProperties.Init(_threshScanner, new Progress(progBar), this);
+            edgeFinderProperties1.Init(_edgeScanner, new Progress(progBar), this);
 
             labelMapView.LabelMapSet = _labelMapSet;
             labelMapView.Init();
