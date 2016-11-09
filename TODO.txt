@@ -1,0 +1,8 @@
+Bugs:
+When loading new set, labels are removed, but not last one from 3D view
+
+Features:
+Edge scan
+Color selection + transparancy
+New viewport or fix trackball
+
