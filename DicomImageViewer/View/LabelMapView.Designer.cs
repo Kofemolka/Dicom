@@ -86,6 +86,8 @@
             this.grid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.grid.Size = new System.Drawing.Size(318, 220);
             this.grid.TabIndex = 1;
+            this.grid.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.grid_CellDoubleClick);
+            this.grid.CurrentCellDirtyStateChanged += new System.EventHandler(this.grid_CurrentCellDirtyStateChanged);
             this.grid.SelectionChanged += new System.EventHandler(this.grid_SelectionChanged);
             // 
             // labelMapViewBindingSource

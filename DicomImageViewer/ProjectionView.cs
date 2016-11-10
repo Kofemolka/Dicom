@@ -53,6 +53,10 @@ namespace DicomImageViewer
         private void ScanDataOnDataUpdated()
         {
             trackCut.Maximum = _scanData.GetAxisCutCount(_axis) - 1;
+            if (trackCut.Maximum < 0)
+            {
+                trackCut.Maximum = 0;
+            }
             trackCut.Value = trackCut.Maximum/2;
             
             Rebuild();

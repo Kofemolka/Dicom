@@ -49,6 +49,8 @@ namespace Model
         public void Reset()
         {
             _slices.Clear();
+
+            DataUpdated?.Invoke();
         }
 
         public void MinMaxDencity(out int min, out int max)

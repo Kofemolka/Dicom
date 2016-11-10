@@ -25,6 +25,12 @@ namespace DicomImageViewer.View
         {
             grid.AutoGenerateColumns = false;
 
+            grid.Columns.Add(new DataGridViewCheckBoxColumn()
+            {
+                DataPropertyName = "Visible",
+                HeaderText = "V"
+            });
+
             grid.Columns.Add(new DataGridViewTextBoxColumn()
             {
                 DataPropertyName = "Name",
@@ -42,6 +48,12 @@ namespace DicomImageViewer.View
             {
                 DataPropertyName = "Color",
                 HeaderText = "Color"
+            });
+
+            grid.Columns.Add(new DataGridViewCheckBoxColumn()
+            {
+                DataPropertyName = "Transparent",
+                HeaderText = "A"
             });
 
             var source = new BindingSource(LabelMapSet.All, null);
@@ -83,7 +95,7 @@ namespace DicomImageViewer.View
                 DataGridViewCellStyle cellStyle, DataGridViewAdvancedBorderStyle advancedBorderStyle,
                 DataGridViewPaintParts paintParts)
             {
-                base.Paint(graphics, clipBounds, cellBounds, rowIndex, cellState, "", formattedValue, errorText, cellStyle, advancedBorderStyle, paintParts);
+                base.Paint(graphics, clipBounds, cellBounds, rowIndex, cellState, "", "", errorText, cellStyle, advancedBorderStyle, paintParts);
 
                 if (value != null)
                 {
@@ -112,6 +124,30 @@ namespace DicomImageViewer.View
             LabelMapSet.Delete(LabelMapSet.Current);
 
             SelectCurrent();
+        }
+
+        private void grid_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            var cell = grid.Rows[e.RowIndex].Cells[e.ColumnIndex] as DataGridViewColorCell;
+
+            var label = cell?.OwningRow.DataBoundItem as ILabelMap;
+            if (label == null)
+                return;
+
+            ColorDialog dlg = new ColorDialog();
+            dlg.Color = (System.Drawing.Color) cell.Value;
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                label.Color = dlg.Color;
+            }
+        }
+
+        private void grid_CurrentCellDirtyStateChanged(object sender, EventArgs e)
+        {
+             if (grid.IsCurrentCellDirty)
+            {
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
         }
     }
 }

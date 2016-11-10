@@ -70,6 +70,7 @@ namespace Model
         public void Add()
         {
             var label = CreateLabelMap();
+            _current = label;
 
             LabelMapAdded?.Invoke(label);
         }
@@ -85,6 +86,8 @@ namespace Model
         public void Reset()
         {
             _syncInvoker.Invoke(() => _labelMaps.Clear());
+
+            _current = null;
 
             LabelMapSetReset?.Invoke();
         }

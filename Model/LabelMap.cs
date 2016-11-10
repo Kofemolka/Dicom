@@ -7,6 +7,7 @@ using Model.Annotations;
 namespace Model
 {
     public delegate void LabelDataChangedEvent();
+    public delegate void LabelPropertiesChangedEvent();
 
     public enum BuildMethod
     {
@@ -16,9 +17,11 @@ namespace Model
 
     public interface ILabelMap : INotifyPropertyChanged
     {
+        bool Visible { get; set; }
         string Name { get; set; }
         int Volume { get; set; }
         System.Drawing.Color Color { get; set; }
+        bool Transparent { get; set; }
         BuildMethod BuildMethod { get; set; }
 
 
@@ -39,6 +42,7 @@ namespace Model
         void FireUpdate();
 
         event LabelDataChangedEvent LabelDataChanged;
+        event LabelPropertiesChangedEvent LabelPropertiesChanged;
     }
 
     public class LabelMap : ILabelMap
@@ -88,8 +92,22 @@ namespace Model
         }
 #endif
         public BuildMethod BuildMethod { get; set; }
+
+        private bool _visible = true;
+        public bool Visible
+        {
+            get { return _visible; }
+            set
+            {
+                _visible = value;
+                LabelPropertiesChanged?.Invoke();
+                OnPropertyChanged(nameof(Visible));
+            }
+        }
+
         public string Name { get; set; }
 
+        private int _volume = 0;
         public int Volume
         {
             get { return _volume; }
@@ -98,9 +116,34 @@ namespace Model
             }
         }
 
-        public System.Drawing.Color Color { get; set; }
+        private System.Drawing.Color _color;
 
-        private int _volume = 0;
+        public System.Drawing.Color Color
+        {
+            get
+            {
+                return System.Drawing.Color.FromArgb(Transparent ? 125 : 255, _color.R, _color.G, _color.B);
+            }
+
+            set
+            {
+                _color = value;
+                LabelPropertiesChanged?.Invoke();
+                OnPropertyChanged(nameof(Color));
+            }
+        }
+
+        private bool _transparent = false;
+        public bool Transparent
+        {
+            get { return _transparent; }
+            set
+            {
+                _transparent = value;
+                LabelPropertiesChanged?.Invoke();
+                OnPropertyChanged(nameof(Transparent));
+            }
+        }
 
         public void FireUpdate()
         {
@@ -186,6 +229,7 @@ namespace Model
         }
 
         public event LabelDataChangedEvent LabelDataChanged;
+        public event LabelPropertiesChangedEvent LabelPropertiesChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]

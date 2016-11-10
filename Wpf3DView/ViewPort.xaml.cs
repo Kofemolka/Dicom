@@ -82,6 +82,8 @@ namespace Wpf3DView
                 model = new GeometryModel3D();
                 _models.Add(label.Name, model);
                 _modelGroup.Children.Add(model);
+
+                label.LabelPropertiesChanged += () => InitModelProperties(model, label);
             }
 
             model.Geometry = BuildModelGeo(label);
@@ -112,11 +114,11 @@ namespace Wpf3DView
 
         private void InitModelProperties(GeometryModel3D model, ILabelMap label)
         {
-            Color color = Color.FromRgb(label.Color.R, label.Color.G, label.Color.B);
+            Color color = Color.FromArgb(label.Color.A, label.Color.R, label.Color.G, label.Color.B);
 
-            if (label.BuildMethod == BuildMethod.Threshold)
+            if (!label.Visible)
             {
-                color.A = 125;
+                color.A = 0;
             }
 
             model.Material = new DiffuseMaterial(new SolidColorBrush(color));
