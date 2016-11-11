@@ -159,6 +159,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Scanners\EdgeFinder.cs" />
+    <Compile Include="Scanners\Helpers.cs" />
     <Compile Include="Scanners\Probe.cs" />
     <Compile Include="Scanners\ThresholdScanner.cs" />
     <Compile Include="Scanners\VoidScanner.cs" />

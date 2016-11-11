@@ -57,10 +57,11 @@
             // 
             this.trackThresh.LargeChange = 20;
             this.trackThresh.Location = new System.Drawing.Point(0, 16);
-            this.trackThresh.Maximum = 5;
+            this.trackThresh.Maximum = 15;
             this.trackThresh.Name = "trackThresh";
             this.trackThresh.Size = new System.Drawing.Size(240, 45);
             this.trackThresh.TabIndex = 36;
+            this.trackThresh.ValueChanged += new System.EventHandler(this.trackThresh_ValueChanged);
             // 
             // EdgeFinderProperties
             // 

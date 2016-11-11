@@ -32,7 +32,7 @@ namespace DicomImageViewer.Scanners
             _labelMap().Reset();
             _labelMap().BuildMethod = BuildMethod.RayCasting;
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, thUp, thDown);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, thUp, thDown);
 
             var heightMap = BuildHeightMap(point, axis, fixProbe);
             var maxHeight = heightMap.Keys.Max();
@@ -55,7 +55,7 @@ namespace DicomImageViewer.Scanners
                         [axis] = h
                     };
 
-                    center = ScanProjection(p, axis, fixProbe, heightMap);
+                    center = ScanProjection(p, axis, fixProbe);
 
                     progress.Tick();
                 }
@@ -74,7 +74,7 @@ namespace DicomImageViewer.Scanners
                         [axis] = h
                     };
 
-                    center = ScanProjection(p, axis, fixProbe, heightMap);
+                    center = ScanProjection(p, axis, fixProbe);
 
                     progress.Tick();
                 }
@@ -129,7 +129,7 @@ namespace DicomImageViewer.Scanners
             _labelMap().Volume = (int)(volume * xres * yres * zres);
         }
 
-        private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe, IDictionary<int, Point3D> heightMap)
+        private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe)
         {
 #if DEBUG
             _labelMap().AddDebugPoint(point);
@@ -146,7 +146,7 @@ namespace DicomImageViewer.Scanners
             {
                 var layer = RayCasting(point, projection, axis, fixProbe);
                 var point3Ds = layer as Point3D[] ?? layer.ToArray();
-                var center = CalculateLayerCenter(point3Ds.ToList());
+                var center = Helpers.CalculateLayerCenter(point3Ds.ToList());
                 _labelMap().Add(point3Ds);
 
                 _labelMap().AddCenter(point);
@@ -156,21 +156,7 @@ namespace DicomImageViewer.Scanners
 
             return point;
         }
-
-        private Point3D CalculateLayerCenter(IList<Point3D> layer)
-        {
-            int x = 0;
-            int y = 0;
-
-            foreach (var mark in layer)
-            {
-                x += mark.X;
-                y += mark.Y;
-            }
-
-            return new Point3D(x / layer.Count, y / layer.Count, layer.First().Z);
-        }
-
+        
         private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Axis axis, Probe probe)
         {
             var res = new List<Point3D>();
@@ -259,7 +245,7 @@ namespace DicomImageViewer.Scanners
                 }
 
                 var probe = _lookupTable.Map(projection.Pixels[px, py]);
-                if (probe >= refProbe.Max || probe <= refProbe.Min)
+                if (!refProbe.InRange(probe))
                 {
                     skipped++;
                 }

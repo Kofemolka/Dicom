@@ -30,9 +30,11 @@ namespace DicomImageViewer.Scanners
             progress.Max(_scanData.GetAxisCutCount(Axis.Z));
             progress.Reset();
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Threshold, Threshold);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.Average, Threshold, Threshold);
             
             int volume = 0;
+            const int MaxPoints = 10*1000*1000;
+            
             Parallel.ForEach(_scanData.GetAllProjections(Axis.Z), (proj, state, z) =>
             {
                 for (int x = 0; x < proj.Width; x++)
@@ -43,6 +45,12 @@ namespace DicomImageViewer.Scanners
                         {
                             _labelMap().Add(new Point3D(x, y, (int)z));
                             Interlocked.Increment(ref volume);
+
+                            if (volume > MaxPoints)
+                            {
+                                state.Stop();
+                                return;
+                            }
                         }
                     }
                 }

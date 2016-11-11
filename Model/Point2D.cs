@@ -29,5 +29,19 @@ namespace Model
 
             throw new ArgumentOutOfRangeException(nameof(axis));
         }
+
+        public override int GetHashCode()
+        {
+            return X + Y * 10000;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Point2D;
+            if (other == null)
+                return false;
+
+            return X == other.X && Y == other.Y;
+        }
     }
 }
