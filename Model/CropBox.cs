@@ -15,6 +15,7 @@ namespace Model
 
         bool Visible { get; set; }
 
+        bool IsInCrop(Point3D point);
         bool IsInCrop(Point3D point, out Point3D bounded);
         
         event CropChangedEvent CropChanged;
@@ -30,6 +31,12 @@ namespace Model
         private int _zr;
         private bool _visible = true;
 
+        public bool IsInCrop(Point3D point)
+        {
+            Point3D dummy;
+            return IsInCrop(point, out dummy);
+        }
+
         public bool IsInCrop(Point3D point, out Point3D bounded)
         {
             bounded = new Point3D(point);
@@ -40,7 +47,7 @@ namespace Model
                 return false;
             }
 
-            if (point.X > XR)
+            if (point.X >= XR)
             {
                 bounded.X = XR;
                 return false;
@@ -52,7 +59,7 @@ namespace Model
                 return false;
             }
 
-            if (point.Y > YR)
+            if (point.Y >= YR)
             {
                 bounded.Y = YR;
                 return false;
@@ -64,7 +71,7 @@ namespace Model
                 return false;
             }
 
-            if (point.Z > ZR)
+            if (point.Z >= ZR)
             {
                 bounded.Z = ZR;
                 return false;
