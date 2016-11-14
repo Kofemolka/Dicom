@@ -45,7 +45,7 @@ namespace DicomImageViewer
 
         public MainForm()
         {
-            _labelMapSet = new LabelMapSet(action => this.Invoke(action));
+            _labelMapSet = new LabelMapSet(_scanSet, action => this.Invoke(action));
             _lookupTable = new LookupTable(_scanSet);
             _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
             _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);

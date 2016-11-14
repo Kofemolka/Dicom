@@ -144,7 +144,7 @@ namespace DicomImageViewer.Scanners
 
             if (fixProbe.InRange(probe))
             {
-                var layer = RayCasting(point, projection, axis, fixProbe);
+                var layer = RayCasting(point, projection, fixProbe);
                 var point3Ds = layer as Point3D[] ?? layer.ToArray();
                 var center = Helpers.CalculateLayerCenter(point3Ds.ToList());
                 _labelMap().Add(point3Ds);
@@ -157,21 +157,22 @@ namespace DicomImageViewer.Scanners
             return point;
         }
         
-        private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Axis axis, Probe probe)
+        private IEnumerable<Point3D> RayCasting(Point3D point, Projection projection, Probe probe)
         {
             var res = new List<Point3D>();
 
             if (projection.Empty)
                 return res;
 
-            var scalarPoint = point.To2D(axis);
+            var scalarPoint = point.To2D(projection.Axis);
 
             var rayOffset = Math.PI * 2 / Rays;
 
             for (int r = 0; r < Rays; r++)
             {
                 var angle = r * rayOffset;
-                var p3d = Cast(scalarPoint, angle, projection, probe).To3D(axis, point[axis]);
+                var p2d = Cast(scalarPoint, angle, projection, probe);
+                var p3d = p2d.To3D(projection.Axis, point[projection.Axis]);
                 p3d.Index = r;
                 res.Add(p3d);
             }
@@ -189,7 +190,7 @@ namespace DicomImageViewer.Scanners
                 {
                     var projection = _scanData.GetProjection(axis, point[axis]);
 
-                    var marks = RayCasting(point, projection, axis, probe);
+                    var marks = RayCasting(point, projection, probe);
 
                     foreach (var mark in marks)
                     {
@@ -208,40 +209,18 @@ namespace DicomImageViewer.Scanners
 
             int skipped = 0;
 
+            var crop = _labelMap().Crop;
+
             for (var l = 0; l < Math.Max(projection.Width, projection.Height); l++)
             {
                 px = (int)(point.X + Math.Cos(angle) * l);
                 py = (int)(point.Y + Math.Sin(angle) * l);
-
-                bool edge = false;
-
-                if (px < 0)
+                
+                var p3d = new Point2D(px, py).To3D(projection.Axis, projection.AxisPos);
+                Point3D p3dBounded;
+                if (!crop.IsInCrop(p3d, out p3dBounded))
                 {
-                    px = 0;
-                    edge = true;
-                }
-
-                if (py < 0)
-                {
-                    py = 0;
-                    edge = true;
-                }
-
-                if (px >= projection.Width)
-                {
-                    px = projection.Width - 1;
-                    edge = true;
-                }
-
-                if (py >= projection.Height)
-                {
-                    py = projection.Height - 1;
-                    edge = true;
-                }
-
-                if (edge)
-                {
-                    break;
+                    return p3dBounded.To2D(projection.Axis);
                 }
 
                 var probe = _lookupTable.Map(projection.Pixels[px, py]);

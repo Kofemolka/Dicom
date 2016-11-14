@@ -2,12 +2,13 @@
 {
     public class Projection
     {        
-        public Projection(Axis axis, int width, int height, ushort[,] pixels)
+        public Projection(Axis axis, int axisPos, int width, int height, ushort[,] pixels)
         {
             Axis = axis;
             Width = width;
             Height = height;
             Pixels = pixels;
+            AxisPos = axisPos;
         }
 
         public Projection(Axis axis)
@@ -18,6 +19,8 @@
         }
 
         public bool Empty => Pixels == null || Pixels.Length == 0;
+
+        public int AxisPos { get; private set; }
 
         public Axis Axis { get; private set; }
 

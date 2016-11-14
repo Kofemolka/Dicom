@@ -147,7 +147,7 @@ namespace Model
                     pixels[y, z] = Pixels[z, index, y];
             }
 
-            return new Projection(Axis.X, YSize, ZSize, pixels);
+            return new Projection(Axis.X, index, YSize, ZSize, pixels);
         }
 
         private Projection getYProjection(int index)
@@ -163,7 +163,7 @@ namespace Model
                     pixels[x, z] = Pixels[z, x, index];
             }
 
-            return new Projection(Axis.Y, YSize, ZSize, pixels);
+            return new Projection(Axis.Y, index, YSize, ZSize, pixels);
         }
 
         private Projection getZProjection(int index)
@@ -179,7 +179,7 @@ namespace Model
                     pixels[x, y] = Pixels[index, x, y];
             }
 
-            return new Projection(Axis.Y, XSize, YSize, pixels);
+            return new Projection(Axis.Z, index, XSize, YSize, pixels);
         }
 
         public void Build(IProgress progress)

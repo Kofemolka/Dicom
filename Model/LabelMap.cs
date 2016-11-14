@@ -24,7 +24,9 @@ namespace Model
         bool Transparent { get; set; }
         BuildMethod BuildMethod { get; set; }
 
-
+        ICropBox Crop { get; set; }
+        bool CropVisible { get; set; }
+    
 #if DEBUG
         void AddDebugPoint(Point3D point);
         IEnumerable<Point3D> GetDebugProjection(Axis axis, int index);
@@ -52,7 +54,15 @@ namespace Model
 
 #if DEBUG
         private readonly List<Point3D> _debugs = new List<Point3D>();
-        
+
+        public ICropBox Crop { get; set; }
+
+        public bool CropVisible
+        {
+            get { return Crop.Visible; }
+            set { Crop.Visible = value; }
+        }
+
         public void AddDebugPoint(Point3D point)
         {
             lock (_debugs)

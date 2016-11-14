@@ -1,10 +1,11 @@
 Bugs:
-
+Event when Current Label changes
+Fix Edge finder
 
 Features:
-Edge scan
+
 
 
 New viewport or fix trackball
-Crop for label
+
 

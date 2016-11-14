@@ -20,6 +20,7 @@ namespace Wpf3DView
         private readonly TranslateTransform3D _translateTransform3D = new TranslateTransform3D(0, 0, 0);
 
         private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
+        private readonly Dictionary<string, GeometryModel3D> _cropModels = new Dictionary<string, GeometryModel3D>();
 
         public Trackball Trackball => _trackball;
 
@@ -47,6 +48,7 @@ namespace Wpf3DView
         {
             _modelGroup.Children.Clear();
             _models.Clear();
+            _cropModels.Clear();
 
             DirectionalLight DirLight1 = new DirectionalLight();
             DirLight1.Color = Colors.White;
@@ -69,9 +71,30 @@ namespace Wpf3DView
             {
                 _modelGroup.Children.Remove(model);
                 _models.Remove(label.Name);
+                _cropModels.Remove(label.Name);
             }
 
             UpdateView();
+        }
+
+        public void UpdateLabelCrop(ILabelMap label)
+        {
+            GeometryModel3D model;
+            if (!_cropModels.TryGetValue(label.Name, out model))
+            {
+                model = new GeometryModel3D();
+                _cropModels.Add(label.Name, model);
+                _modelGroup.Children.Add(model);
+
+                label.Crop.CropChanged += () =>
+                {
+                    model.Geometry = BuildCropModelGeo(label.Crop);
+                    InitCropModelProperties(model, label);
+                };
+            }
+
+            model.Geometry = BuildCropModelGeo(label.Crop);
+            InitCropModelProperties(model, label);
         }
 
         public void UpdateLabel(ILabelMap label)
@@ -83,7 +106,18 @@ namespace Wpf3DView
                 _models.Add(label.Name, model);
                 _modelGroup.Children.Add(model);
 
-                label.LabelPropertiesChanged += () => InitModelProperties(model, label);
+                UpdateLabelCrop(label);
+
+                label.LabelPropertiesChanged += () =>
+                {
+                    InitModelProperties(model, label);
+
+                    GeometryModel3D cropModel;
+                    if (_cropModels.TryGetValue(label.Name, out cropModel))
+                    {
+                        InitCropModelProperties(cropModel, label);
+                    }
+                };
             }
 
             model.Geometry = BuildModelGeo(label);
@@ -119,6 +153,22 @@ namespace Wpf3DView
             if (!label.Visible)
             {
                 color.A = 0;
+            }
+
+            model.Material = new DiffuseMaterial(new SolidColorBrush(color));
+        }
+
+        private void InitCropModelProperties(GeometryModel3D model, ILabelMap label)
+        {
+            Color color = Colors.White;
+
+            if (!label.Visible || !label.Crop.Visible)
+            {
+                color.A = 0;
+            }
+            else
+            {
+                color.A = 70;
             }
 
             model.Material = new DiffuseMaterial(new SolidColorBrush(color));
@@ -253,7 +303,7 @@ namespace Wpf3DView
             mesh.TriangleIndices.Add(offset + 1);
             mesh.TriangleIndices.Add(offset + 2);
         }
-        
+
         private MeshGeometry3D BuildMesh(IEnumerable<Model.Point3D> pointCloud)
         {
             var zOrderCloud = new Dictionary<int, List<Model.Point3D>>();
@@ -266,14 +316,14 @@ namespace Wpf3DView
                     points = new List<Model.Point3D>();
                     zOrderCloud.Add(point3D.Z, points);
                 }
-                
+
                 points.Add(point3D);
             }
 
             MeshGeometry3D geo = new MeshGeometry3D();
 
             if (!zOrderCloud.Any())
-            {               
+            {
                 return geo;
             }
 
@@ -283,18 +333,56 @@ namespace Wpf3DView
 
             for (var z = 0; z < keys.Length - 1; z++)
             {
-                BuildSurface(geo, hashPoint, zOrderCloud[keys[z]], zOrderCloud[keys[z+1]]);
+                BuildSurface(geo, hashPoint, zOrderCloud[keys[z]], zOrderCloud[keys[z + 1]]);
             }
 
             BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[0]], true);
-            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[keys.Length-1]], false);
+            BuildEndPlanes(geo, hashPoint, zOrderCloud[keys[keys.Length - 1]], false);
 
+            foreach (var source in hashPoint.OrderBy(pair => pair.Value))
+            {
+                SafeAddPoint(geo, new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
+            }
+
+            return geo;
+        }
+
+        private MeshGeometry3D BuildCropModelGeo(ICropBox cropBox)
+        {
+            MeshGeometry3D geo = new MeshGeometry3D();
+            
+            var hashPoint = new Dictionary<Model.Point3D, int>();
+            
+            var z0tl = new Model.Point3D(cropBox.XL, cropBox.YL, cropBox.ZL);
+            var z0tr = new Model.Point3D(cropBox.XR, cropBox.YL, cropBox.ZL);
+            var z0bl = new Model.Point3D(cropBox.XL, cropBox.YR, cropBox.ZL);
+            var z0br = new Model.Point3D(cropBox.XR, cropBox.YR, cropBox.ZL);
+
+            var z1tl = new Model.Point3D(cropBox.XL, cropBox.YL, cropBox.ZR);
+            var z1tr = new Model.Point3D(cropBox.XR, cropBox.YL, cropBox.ZR);
+            var z1bl = new Model.Point3D(cropBox.XL, cropBox.YR, cropBox.ZR);
+            var z1br = new Model.Point3D(cropBox.XR, cropBox.YR, cropBox.ZR);
+
+            BuildPlane(geo, hashPoint, z0tl, z0tr, z0br, z0bl); //front
+            BuildPlane(geo, hashPoint, z0tr, z1tr, z1br, z0br); //right
+            BuildPlane(geo, hashPoint, z1tl, z0tl, z0bl, z1bl); //left
+            BuildPlane(geo, hashPoint, z1tr, z1tl, z1bl, z1br); //back
+            BuildPlane(geo, hashPoint, z1tl, z1tr, z0tr, z0tl); //top
+            BuildPlane(geo, hashPoint, z0bl, z0br, z1br, z1bl); //bottom
+            
             foreach (var source in hashPoint.OrderBy(pair => pair.Value))
             {
                 SafeAddPoint(geo, new Point3D(source.Key.X, source.Key.Y, source.Key.Z));
             }
             
             return geo;
+        }
+
+        private void BuildPlane(MeshGeometry3D geo, Dictionary<Model.Point3D, int> hashPoint, Model.Point3D p1,
+            Model.Point3D p2, Model.Point3D p3, Model.Point3D p4)
+        {
+            AddTriangle(geo, hashPoint, p1, p2, p3);
+            AddTriangle(geo, hashPoint, p3, p4, p1);
         }
 
         private MeshGeometry3D BuildPointCloud(IEnumerable<Model.Point3D> pointCloud)

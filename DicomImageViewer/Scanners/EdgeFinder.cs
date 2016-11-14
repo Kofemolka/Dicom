@@ -174,42 +174,44 @@ namespace DicomImageViewer.Scanners
         {
             var res = new List<Point2D>();
 
-            if (p.X > 0)
+            var crop = _labelMap().Crop;
+
+            if (p.X > crop.XL)
             {
                 res.Add(new Point2D(p.X - 1, p.Y)); //W
 
-                if (p.Y > 0)
+                if (p.Y > crop.YL)
                 {
                     res.Add(new Point2D(p.X - 1, p.Y - 1)); //NW
                 }
             }
 
-            if (p.Y > 0)
+            if (p.Y > crop.YL)
             {
                 res.Add(new Point2D(p.X, p.Y - 1)); //N
 
-                if (p.X < proj.Width - 1)
+                if (p.X < crop.XR - 1)
                 {
                     res.Add(new Point2D(p.X + 1, p.Y - 1)); //NE
                 }
             }
 
 
-            if (p.X < proj.Width - 1)
+            if (p.X < crop.XR - 1)
             {
                 res.Add(new Point2D(p.X + 1, p.Y)); //E
 
-                if (p.Y < proj.Height - 1)
+                if (p.Y < crop.YR - 1)
                 {
                     res.Add(new Point2D(p.X + 1, p.Y + 1)); //SE
                 }
             }
 
-            if (p.Y < proj.Height - 1)
+            if (p.Y < crop.YR - 1)
             {
                 res.Add(new Point2D(p.X, p.Y + 1)); //S
 
-                if (p.X > 0)
+                if (p.X > crop.XL)
                 {
                     res.Add(new Point2D(p.X-1, p.Y + 1)); //SW
                 }

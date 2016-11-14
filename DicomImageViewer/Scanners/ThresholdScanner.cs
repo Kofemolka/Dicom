@@ -26,8 +26,10 @@ namespace DicomImageViewer.Scanners
             _labelMap().Reset();
             _labelMap().BuildMethod = BuildMethod.Threshold;
 
+            var crop = _labelMap().Crop;
+
             progress.Min(1);
-            progress.Max(_scanData.GetAxisCutCount(Axis.Z));
+            progress.Max(crop.ZR - crop.ZL);
             progress.Reset();
 
             var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.Average, Threshold, Threshold);
@@ -37,9 +39,13 @@ namespace DicomImageViewer.Scanners
             
             Parallel.ForEach(_scanData.GetAllProjections(Axis.Z), (proj, state, z) =>
             {
-                for (int x = 0; x < proj.Width; x++)
+
+                if (z < crop.ZL || z > crop.ZR)
+                    return;
+
+                for (int x = crop.XL; x < crop.XR; x++)
                 {
-                    for (int y = 0; y < proj.Height; y++)
+                    for (int y = crop.YL; y < crop.YR; y++)
                     {
                         if (fixProbe.InRange(_lookupTable.Map(proj.Pixels[x, y])))
                         {

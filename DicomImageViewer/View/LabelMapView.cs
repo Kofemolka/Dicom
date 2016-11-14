@@ -56,6 +56,12 @@ namespace DicomImageViewer.View
                 HeaderText = "A"
             });
 
+            grid.Columns.Add(new DataGridViewCheckBoxColumn()
+            {
+                DataPropertyName = "CropVisible",
+                HeaderText = "C"
+            });
+
             var source = new BindingSource(LabelMapSet.All, null);
             grid.DataSource = source;
         }

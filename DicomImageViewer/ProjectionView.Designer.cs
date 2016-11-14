@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.trackCut = new System.Windows.Forms.TrackBar();
-            this.surface = new DrawSurface();
+            this.surface = new DicomImageViewer.DrawSurface();
             ((System.ComponentModel.ISupportInitialize)(this.trackCut)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,7 +52,9 @@
             this.surface.TabIndex = 1;
             this.surface.Paint += new System.Windows.Forms.PaintEventHandler(this.surface_Paint);
             this.surface.MouseClick += new System.Windows.Forms.MouseEventHandler(this.surface_MouseClick);
+            this.surface.MouseDown += new System.Windows.Forms.MouseEventHandler(this.surface_MouseDown);
             this.surface.MouseMove += new System.Windows.Forms.MouseEventHandler(this.surface_MouseMove);
+            this.surface.MouseUp += new System.Windows.Forms.MouseEventHandler(this.surface_MouseUp);
             // 
             // ProjectionView
             // 

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
 using Model;
@@ -31,6 +33,8 @@ namespace DicomImageViewer
             _labelMapSet.LabelMapUpdated += LabelMapOnLabelDataChanged;
             _labelMapSet.LabelMapDeleted += LabelMapOnLabelDataChanged;
             _labelMapSet.LabelMapSetReset += () => surface.Invalidate();
+            _labelMapSet.LabelMapCurrentSelectionChanged +=
+                () => _labelMapSet.Current.Crop.CropChanged += () => surface.Invalidate();
 
             InitializeComponent();
         }
@@ -95,6 +99,7 @@ namespace DicomImageViewer
                 DrawCut(g);
                 DrawLabels(g);
                 DrawDebugPoints(g);
+                DrawCropBox(g);
             }
             catch (Exception ex)
             {
@@ -149,10 +154,56 @@ namespace DicomImageViewer
 #endif
         }
 
+        private void DrawCropBox(Graphics g)
+        {
+            var imgSize = ImageSize();
+            var imgOffset = ImageOffset(imgSize);
+
+            var crop = _labelMapSet.Current.Crop;
+
+            Point2D tl, tr, bl, br;
+
+            switch (_axis)
+            {
+                case Axis.X:
+                    tl = new Point2D(crop.YL, crop.ZL);
+                    tr = new Point2D(crop.YR, crop.ZL);
+                    bl = new Point2D(crop.YL, crop.ZR);
+                    br = new Point2D(crop.YR, crop.ZR);
+                    break;
+                case Axis.Y:
+                    tl = new Point2D(crop.XL, crop.ZL);
+                    tr = new Point2D(crop.XR, crop.ZL);
+                    bl = new Point2D(crop.XL, crop.ZR);
+                    br = new Point2D(crop.XR, crop.ZR);
+                    break;
+                case Axis.Z:
+                    tl = new Point2D(crop.XL, crop.YL);
+                    tr = new Point2D(crop.XR, crop.YL);
+                    bl = new Point2D(crop.XL, crop.YR);
+                    br = new Point2D(crop.XR, crop.YR);
+                    break;
+                default:
+                    return;
+            }
+
+            tl = Image2Surface(tl, imgOffset, imgSize);
+            tr = Image2Surface(tr, imgOffset, imgSize);
+            bl = Image2Surface(bl, imgOffset, imgSize);
+            br = Image2Surface(br, imgOffset, imgSize);
+
+            using (var pen = new Pen(new HatchBrush(HatchStyle.Percent70, Color.White), 1))
+            {
+                g.DrawLine(pen, tl.X, tl.Y, tr.X, tr.Y);
+                g.DrawLine(pen, tr.X , tr.Y, br.X, br.Y);
+                g.DrawLine(pen, br.X, br.Y, bl.X, bl.Y);
+                g.DrawLine(pen, bl.X, bl.Y, tl.X, tl.Y);
+            }
+        }
+
         private void CreateImage16()
         {
-            BitmapData bmd = _bmp.LockBits(new Rectangle(0, 0, _bmp.Width, _bmp.Height),
-               ImageLockMode.ReadOnly, _bmp.PixelFormat);
+            BitmapData bmd = _bmp.LockBits(new Rectangle(0, 0, _bmp.Width, _bmp.Height), ImageLockMode.ReadOnly, _bmp.PixelFormat);
 
             unsafe
             {
@@ -162,16 +213,16 @@ namespace DicomImageViewer
 
                 for (i = 0; i < bmd.Height; ++i)
                 {
-                    byte* row = (byte*)bmd.Scan0 + (i * bmd.Stride);
-                    i1 = i * bmd.Width;
+                    byte* row = (byte*) bmd.Scan0 + (i*bmd.Stride);
+                    i1 = i*bmd.Width;
 
                     for (j = 0; j < bmd.Width; ++j)
                     {
                         b = _lookupTable.Map(_projection.Pixels[j, i]);
-                        j1 = j * pixelSize;
-                        row[j1] = b;            // Red
-                        row[j1 + 1] = b;        // Green
-                        row[j1 + 2] = b;        // Blue
+                        j1 = j*pixelSize;
+                        row[j1] = b; // Red
+                        row[j1 + 1] = b; // Green
+                        row[j1 + 2] = b; // Blue
                     }
                 }
             }
@@ -181,28 +232,24 @@ namespace DicomImageViewer
 
         private SizeF ImageSize()
         {
-            SizeF sizef = new SizeF(_bmp.Width / _bmp.HorizontalResolution,
-                                    _bmp.Height / _bmp.VerticalResolution);
+            SizeF sizef = new SizeF(_bmp.Width/_bmp.HorizontalResolution, _bmp.Height/_bmp.VerticalResolution);
 
-            float fScale = Math.Min(surface.Width / sizef.Width,
-                                    surface.Height / sizef.Height);
+            float fScale = Math.Min(surface.Width/sizef.Width, surface.Height/sizef.Height);
 
             sizef.Width *= fScale;
             sizef.Height *= fScale;
 
             return sizef;
         }
-        
+
         private Size ImageOffset(SizeF imgSize)
         {
-            return new Size((int)((surface.Width - imgSize.Width) / 2),
-                            (int)((surface.Height - imgSize.Height) / 2));
+            return new Size((int) ((surface.Width - imgSize.Width)/2), (int) ((surface.Height - imgSize.Height)/2));
         }
 
         private Point2D Image2Surface(Point2D p, Size imgOffset, SizeF imgSize)
-        {  
-            return new Point2D((int)(p.X * imgSize.Width / _projection.Width + imgOffset.Width),
-                            (int)(p.Y * imgSize.Height / _projection.Height + imgOffset.Height));
+        {
+            return new Point2D((int) (p.X*imgSize.Width/_projection.Width + imgOffset.Width), (int) (p.Y*imgSize.Height/_projection.Height + imgOffset.Height));
         }
 
         private Point2D Image2Surface(Point2D p)
@@ -228,7 +275,7 @@ namespace DicomImageViewer
             if (normalP.X >= imgSize.Width)
             {
                 outOfImage = true;
-                normalP.X = (int)(imgSize.Width - 1);
+                normalP.X = (int) (imgSize.Width - 1);
             }
             if (normalP.Y < 0)
             {
@@ -238,14 +285,27 @@ namespace DicomImageViewer
             if (normalP.Y >= imgSize.Height)
             {
                 outOfImage = true;
-                normalP.Y = (int)(imgSize.Height - 1);
+                normalP.Y = (int) (imgSize.Height - 1);
             }
 
-            var realX = normalP.X * _projection.Width / imgSize.Width;
-            var realY = normalP.Y * _projection.Height / imgSize.Height;
+            var realX = normalP.X*_projection.Width/imgSize.Width;
+            var realY = normalP.Y*_projection.Height/imgSize.Height;
 
-            return new Point2D((int)realX, (int)realY);
+            return new Point2D((int) realX, (int) realY);
         }
+
+        private enum CropLock
+        {
+            None,
+            XL,
+            XR,
+            YL,
+            YR,
+            ZL,
+            ZR
+        }
+
+        private CropLock _cropLock = CropLock.None;
 
         private void surface_MouseClick(object sender, MouseEventArgs e)
         {
@@ -255,7 +315,7 @@ namespace DicomImageViewer
             bool outOfSurface;
             var point2D = Surface2Image(new Point(e.X, e.Y), out outOfSurface);
 
-            if (!outOfSurface)
+            if (!outOfSurface && _cropLock == CropLock.None)
             {
                 _probe.PointSelect(point2D.To3D(_axis, CurrentCutIndex));
             }
@@ -265,22 +325,197 @@ namespace DicomImageViewer
         {
             if (!DataReady)
                 return;
-            
+
             if (_projection == null || _projection.Empty)
                 return;
 
             bool outOfSurface;
             var point2D = Surface2Image(new Point(e.X, e.Y), out outOfSurface);
 
+            Debug.Print(point2D.X + ":" + point2D.Y);
+
             if (!outOfSurface)
             {
                 _probe.Dencity(_projection.Pixels[point2D.X, point2D.Y]);
             }
+
+            if (_cropLock == CropLock.None) // not locked
+            {
+                var cropLock = MouseOverCropBox(point2D);
+
+                if (cropLock != CropLock.None) //can lock on click
+                {
+                    Cursor = Cursors.Hand;
+                }
+                else
+                {
+                    if (!outOfSurface)
+                    {
+                        Cursor = Cursors.Cross;
+                    }
+                    else
+                    {
+                        Cursor = Cursors.Default;
+                    }
+                }
+            }
+
+            var crop = _labelMapSet.Current.Crop;
+            switch (_axis)
+            {
+                case Axis.X:
+                    switch (_cropLock)
+                    {
+                        case CropLock.YL:
+                            crop.YL = point2D.X;
+                            break;
+                        case CropLock.YR:
+                            crop.YR = point2D.X;
+                            break;
+                        case CropLock.ZL:
+                            crop.ZL = point2D.Y;
+                            break;
+                        case CropLock.ZR:
+                            crop.ZR = point2D.Y;
+                            break;
+                    }
+                    break;
+                case Axis.Y:
+                    switch (_cropLock)
+                    {
+                        case CropLock.XL:
+                            crop.XL = point2D.X;
+                            break;
+                        case CropLock.XR:
+                            crop.XR = point2D.X;
+                            break;
+                        case CropLock.ZL:
+                            crop.ZL = point2D.Y;
+                            break;
+                        case CropLock.ZR:
+                            crop.ZR = point2D.Y;
+                            break;
+                    }
+                    break;
+                case Axis.Z:
+                    switch (_cropLock)
+                    {
+                        case CropLock.XL:
+                            crop.XL = point2D.X;
+                            break;
+                        case CropLock.XR:
+                            crop.XR = point2D.X;
+                            break;
+                        case CropLock.YL:
+                            crop.YL = point2D.Y;
+                            break;
+                        case CropLock.YR:
+                            crop.YR = point2D.Y;
+                            break;
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private bool CropEdgeCatch(int a, int b)
+        {
+            return Math.Abs(a - b) < 2;
+        }
+
+        private CropLock MouseOverCropBox(Point2D point)
+        {
+            var crop = _labelMapSet.Current.Crop;
+
+            switch (_axis)
+            {
+                case Axis.X:
+                    if (CropEdgeCatch(point.X, crop.YL))
+                    {
+                        return CropLock.YL;
+                    }
+                    if (CropEdgeCatch(point.X, crop.YR))
+                    {
+                        return CropLock.YR;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.ZL))
+                    {
+                        return CropLock.ZL;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.ZR))
+                    {
+                        return CropLock.ZR;
+                    }
+                    break;
+                case Axis.Y:
+                    if (CropEdgeCatch(point.X, crop.XL))
+                    {
+                        return CropLock.XL;
+                    }
+                    if (CropEdgeCatch(point.X, crop.XR))
+                    {
+                        return CropLock.XR;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.ZL))
+                    {
+                        return CropLock.ZL;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.ZR))
+                    {
+                        return CropLock.ZR;
+                    }
+                    break;
+                case Axis.Z:
+                    if (CropEdgeCatch(point.X, crop.XL))
+                    {
+                        return CropLock.XL;
+                    }
+                    if (CropEdgeCatch(point.X, crop.XR))
+                    {
+                        return CropLock.XR;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.YL))
+                    {
+                        return CropLock.YL;
+                    }
+                    if (CropEdgeCatch(point.Y, crop.YR))
+                    {
+                        return CropLock.YR;
+                    }
+
+                    break;
+            }
+
+            return CropLock.None;
         }
 
         private void ProjectionView_Resize(object sender, EventArgs e)
         {
             surface.Invalidate();
+        }
+
+        private void surface_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!DataReady)
+                return;
+
+            bool outOfSurface;
+            var point2D = Surface2Image(new Point(e.X, e.Y), out outOfSurface);
+
+            var cropLock = MouseOverCropBox(point2D);
+
+            if (cropLock != CropLock.None)
+            {
+                _cropLock = cropLock;
+                Cursor = Cursors.SizeAll;
+            }
+        }
+
+        private void surface_MouseUp(object sender, MouseEventArgs e)
+        {
+            _cropLock = CropLock.None;
+            Cursor = Cursors.Default;
         }
     }
 }
