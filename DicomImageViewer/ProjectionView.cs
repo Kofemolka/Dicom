@@ -424,7 +424,7 @@ namespace DicomImageViewer
 
         private bool CropEdgeCatch(int a, int b)
         {
-            return Math.Abs(a - b) < 2;
+            return Math.Abs(a - b) < 5;
         }
 
         private CropLock MouseOverCropBox(Point2D point)
