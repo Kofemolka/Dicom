@@ -28,8 +28,10 @@ namespace DicomImageViewer.Scanners
             _labelMap().Reset();
             _labelMap().BuildMethod = BuildMethod.Threshold;
 
+            var crop = _labelMap().Crop;
+
             progress.Min(1);
-            progress.Max(_scanData.GetAxisCutCount(Axis.Z));
+            progress.Max(crop.ZR - crop.ZL);
             progress.Reset();
 
             var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, Threshold, Threshold);
@@ -40,7 +42,7 @@ namespace DicomImageViewer.Scanners
                 Point3D center = point;
 
                 //go up
-                for (var h = point[Axis.Z]; h < _scanData.GetAxisCutCount(Axis.Z); h++)
+                for (var h = point[Axis.Z]; h < crop.ZR; h++)
                 {
                     var p = new Point3D(center)
                     {
@@ -59,7 +61,7 @@ namespace DicomImageViewer.Scanners
                 Point3D center = point;
 
                 ////go down
-                for (var h = point[Axis.Z] - 1; h >= 0; h--)
+                for (var h = point[Axis.Z] - 1; h >= crop.ZL; h--)
                 {
                     var p = new Point3D(center)
                     {
@@ -74,18 +76,22 @@ namespace DicomImageViewer.Scanners
 
             Task.WaitAll(tasks.ToArray());
 
+            Helpers.CalculateVolume(_labelMap(), _scanData);
+
             _labelMap().FireUpdate();
         }
 
         private Point3D ScanProjection(Point3D point, Probe fixProbe)
         {
             var projection = _scanData.GetProjection(Axis.Z, point[Axis.Z]);
-            if(projection.Empty)
+            if (projection.Empty)
                 return point;
 
             var scalarPoint = point.To2D(Axis.Z);
 
-            for (var x = scalarPoint.X; x < projection.Width; x++)
+            var crop = _labelMap().Crop;
+
+            for (var x = scalarPoint.X; x < crop.XR; x++)
             {
                 scalarPoint.X = x;
 
@@ -96,7 +102,7 @@ namespace DicomImageViewer.Scanners
                     break;
                 }
             }
-            
+
             var layer = Scan(scalarPoint, projection, fixProbe, point[Axis.Z]);
             var point3Ds = layer as Point3D[] ?? layer.ToArray();
             if (point3Ds.Any())
@@ -105,7 +111,7 @@ namespace DicomImageViewer.Scanners
 
                 _labelMap().Add(point3Ds);
 
-                _labelMap().AddCenter(point);
+                _labelMap().AddCenter(center);
 
                 return center;
             }
@@ -113,124 +119,101 @@ namespace DicomImageViewer.Scanners
             return point;
         }
 
+        private enum Direction : int
+        {
+            W = 0,
+            NW,
+            N,
+            NE,
+            E,
+            SE,
+            S,
+            SW
+        }
+
         private IEnumerable<Point3D> Scan(Point2D start, Projection proj, Probe fixProbe, int Z)
         {
             var res = new List<Point3D>();
             const int maxPath = 10000;
 
-            Point2D p = start;
-            Point2D b = new Point2D(p.X-1, p.Y);
-            Point2D c = new Point2D(p.X-1, p.Y-1);
-            IList<Point2D> N = GetNeighborhood(p, b, proj);
-            int nN = 0;
+            Point2D current = start;            
+                        
+            Direction dir = Direction.E;
+            dir = TurnLeft(dir);     
+
+            Point2D test;
 
             int path = 0;
             do
-            {
-                if (!fixProbe.InRange(_lookupTable.Map(proj.Pixels[c.X, c.Y])))
+            {                
+                bool edge;
+                test = GetNextNeighbor(current, dir, Z, out edge);                
+
+                if(edge || !SafeCheckProbe(fixProbe, proj, test))
                 {
-                    res.Add(c.To3D(Axis.Z, Z));
-                    b = p;
-                    p = c;
-                    N = GetNeighborhood(p, b, proj);
-                    if (N == null)
-                    {
-                        break;
-                    }
-                    nN = 0;
-                    c = N[nN];
+                    res.Add(test.To3D(Axis.Z, Z));                    
+                    dir = TurnLeft(dir);
                 }
                 else
                 {
-                    nN++;
-                    if (nN >= N.Count)
-                    {
-                        _labelMap().Add(c.To3D(Axis.Z, Z));
-                        b = p;
-                        p = c;
-                        N = GetNeighborhood(p, b, proj);
-                        if (N == null)
-                        {
-                            break;
-                        }
-                        nN = 0;
-                    }
-
-                    c = N[nN];
+                    dir = TurnRight(dir);
                 }
 
-                if (path++ > maxPath)
-                {
-                    break;
-                }
-
-            } while (!c.Equals(start));
+                current = test;
+            } while (!test.Equals(start) && (path++ < maxPath)); //until got back to start or max path reached
 
             return res;
         }
 
-
-        private IList<Point2D> GetNeighborhood(Point2D p, Point2D start, Projection proj)
+        private static Direction TurnLeft(Direction dir)
         {
-            var res = new List<Point2D>();
+            return (Direction)(((int)dir + 6) % 8);
+        }
 
+        private static Direction TurnRight(Direction dir)
+        {
+            return (Direction)(((int)dir + 2) % 8);
+        }
+
+        private Point2D GetNextNeighbor(Point2D p, Direction dir, int Z, out bool edge)
+        {
+            edge = false;
+            
+            var np = new Point2D(p.X + _N[(int)dir].X, p.Y + _N[(int)dir].Y);
             var crop = _labelMap().Crop;
 
-            if (p.X > crop.XL)
+            if (np.X > (crop.XR - 2) ||
+               np.X < (crop.XL + 1) ||
+               np.Y > (crop.YR - 2) ||
+               np.Y < (crop.YL + 1))
             {
-                res.Add(new Point2D(p.X - 1, p.Y)); //W
-
-                if (p.Y > crop.YL)
-                {
-                    res.Add(new Point2D(p.X - 1, p.Y - 1)); //NW
-                }
+                edge = true;
             }
 
-            if (p.Y > crop.YL)
-            {
-                res.Add(new Point2D(p.X, p.Y - 1)); //N
-
-                if (p.X < crop.XR - 1)
-                {
-                    res.Add(new Point2D(p.X + 1, p.Y - 1)); //NE
-                }
-            }
-
-
-            if (p.X < crop.XR - 1)
-            {
-                res.Add(new Point2D(p.X + 1, p.Y)); //E
-
-                if (p.Y < crop.YR - 1)
-                {
-                    res.Add(new Point2D(p.X + 1, p.Y + 1)); //SE
-                }
-            }
-
-            if (p.Y < crop.YR - 1)
-            {
-                res.Add(new Point2D(p.X, p.Y + 1)); //S
-
-                if (p.X > crop.XL)
-                {
-                    res.Add(new Point2D(p.X-1, p.Y + 1)); //SW
-                }
-            }
-
-            var ndx = res.IndexOf(start);
-            if (ndx == -1)
-                return null;
-
-            var ordered = new List<Point2D>();
-
-            if (ndx != res.Count - 1)
-            {
-                ordered.AddRange(res.GetRange(ndx + 1, res.Count - ndx - 1));
-            }
-
-            ordered.AddRange(res.GetRange(0, ndx+1));
-
-            return ordered;
+            return np;
         }
+        
+        private bool SafeCheckProbe(Probe probe, Projection proj, Point2D p)
+        {
+            if (p.X < 0 || p.X >= proj.Width ||
+                p.Y < 0 || p.Y >= proj.Height)
+            {
+                return false;
+            }
+
+            return probe.InRange(_lookupTable.Map(proj.Pixels[p.X, p.Y]));
+        }
+
+        private readonly Point2D[] _N = new Point2D[8]
+        {
+            new Model.Point2D(-1, 0),
+            new Model.Point2D(-1, -1),
+            new Model.Point2D(0, -1),
+            new Model.Point2D(1, -1),
+            new Model.Point2D(1, 0),
+            new Model.Point2D(1, 1),
+            new Model.Point2D(0, 1),
+            new Model.Point2D(-1, 1)
+        };
     }
 }
