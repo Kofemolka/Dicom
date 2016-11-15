@@ -28,38 +28,44 @@ namespace DicomImageViewer.View
             grid.Columns.Add(new DataGridViewCheckBoxColumn()
             {
                 DataPropertyName = "Visible",
-                HeaderText = "V"
+                HeaderText = "V",
+                Width = 20
             });
 
             grid.Columns.Add(new DataGridViewTextBoxColumn()
             {
                 DataPropertyName = "Name",
-                HeaderText = "Label"
+                HeaderText = "Label",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
             });
 
             grid.Columns.Add(new DataGridViewTextBoxColumn()
             {
                 DataPropertyName = "Volume",
                 HeaderText = "Volume",
-                ReadOnly = true
+                ReadOnly = true,
+                Width = 60
             });
 
             grid.Columns.Add(new DataGridViewColorColumn()
             {
                 DataPropertyName = "Color",
-                HeaderText = "Color"
+                HeaderText = "Color",
+                Width = 40
             });
 
             grid.Columns.Add(new DataGridViewCheckBoxColumn()
             {
                 DataPropertyName = "Transparent",
-                HeaderText = "A"
+                HeaderText = "A",
+                Width = 20
             });
 
             grid.Columns.Add(new DataGridViewCheckBoxColumn()
             {
                 DataPropertyName = "CropVisible",
-                HeaderText = "C"
+                HeaderText = "C",
+                Width = 20
             });
 
             var source = new BindingSource(LabelMapSet.All, null);

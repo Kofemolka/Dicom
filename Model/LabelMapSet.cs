@@ -60,9 +60,7 @@ namespace Model
                         Add();
                     }
 
-                    _current = _labelMaps.Last();
-
-                    LabelMapCurrentSelectionChanged?.Invoke();
+                    Current = _labelMaps.Last();                    
                 }
 
                 return _current;

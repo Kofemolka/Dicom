@@ -1,17 +1,12 @@
 ﻿<UserControl x:Class="Wpf3DView.ViewPort"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Focusable="True"
     >
-
-    
-
-        <!-- Viewport3D is the rendering surface. -->
-        <Viewport3D Name="myViewport" >        
-
-           
-
+    <xctk:BusyIndicator x:Name="_busyIndicator">
+        <Viewport3D Name="myViewport" >
         </Viewport3D>
-   
+    </xctk:BusyIndicator>
 
 </UserControl>

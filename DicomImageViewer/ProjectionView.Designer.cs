@@ -35,7 +35,8 @@
             // 
             // trackCut
             // 
-            this.trackCut.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.trackCut.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.trackCut.Location = new System.Drawing.Point(0, 400);
             this.trackCut.Name = "trackCut";
             this.trackCut.Size = new System.Drawing.Size(685, 45);
@@ -45,10 +46,13 @@
             // 
             // surface
             // 
-            this.surface.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.surface.Location = new System.Drawing.Point(0, 0);
+            this.surface.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.surface.Location = new System.Drawing.Point(2, 2);
             this.surface.Name = "surface";
-            this.surface.Size = new System.Drawing.Size(685, 400);
+            this.surface.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
+            this.surface.Size = new System.Drawing.Size(681, 392);
             this.surface.TabIndex = 1;
             this.surface.Paint += new System.Windows.Forms.PaintEventHandler(this.surface_Paint);
             this.surface.MouseClick += new System.Windows.Forms.MouseEventHandler(this.surface_MouseClick);

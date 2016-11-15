@@ -1,11 +1,8 @@
 Bugs:
-Event when Current Label changes
-Fix Edge finder
+
 
 Features:
-
-
-
 New viewport or fix trackball
+Remember Scanner properties per Label
 
 

@@ -29,7 +29,7 @@ namespace Model
         private int _yr;
         private int _zl;
         private int _zr;
-        private bool _visible = true;
+        private bool _visible = false;
 
         public bool IsInCrop(Point3D point)
         {

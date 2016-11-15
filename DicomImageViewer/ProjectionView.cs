@@ -33,8 +33,11 @@ namespace DicomImageViewer
             _labelMapSet.LabelMapUpdated += LabelMapOnLabelDataChanged;
             _labelMapSet.LabelMapDeleted += LabelMapOnLabelDataChanged;
             _labelMapSet.LabelMapSetReset += () => surface.Invalidate();
-            _labelMapSet.LabelMapCurrentSelectionChanged +=
-                () => _labelMapSet.Current.Crop.CropChanged += () => surface.Invalidate();
+            _labelMapSet.LabelMapCurrentSelectionChanged += () =>
+                {
+                    _labelMapSet.Current.Crop.CropChanged += () => surface.Invalidate();
+                    surface.Invalidate();
+                };
 
             InitializeComponent();
         }

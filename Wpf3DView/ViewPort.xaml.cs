@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using Model;
 using Point3D = System.Windows.Media.Media3D.Point3D;
+using System.Threading.Tasks;
 
 namespace Wpf3DView
 {    
@@ -21,7 +22,7 @@ namespace Wpf3DView
 
         private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
         private readonly Dictionary<string, GeometryModel3D> _cropModels = new Dictionary<string, GeometryModel3D>();
-
+        
         public Trackball Trackball => _trackball;
 
         private long _vertexCount = 0;
@@ -42,7 +43,6 @@ namespace Wpf3DView
         {
             return _models;
         }
-
 
         public void Reset()
         {
@@ -88,17 +88,28 @@ namespace Wpf3DView
 
                 label.Crop.CropChanged += () =>
                 {
-                    model.Geometry = BuildCropModelGeo(label.Crop);
-                    InitCropModelProperties(model, label);
+                    UpdateCropBox(model, label);                    
                 };
             }
 
-            model.Geometry = BuildCropModelGeo(label.Crop);
-            InitCropModelProperties(model, label);
+            UpdateCropBox(model, label);
+        }
+
+        private void UpdateCropBox(GeometryModel3D model, ILabelMap label)
+        {
+            if (label.Visible && label.Crop.Visible)
+            {
+                model.Geometry = BuildCropModelGeo(label.Crop);
+                InitCropModelProperties(model, label);
+            }
+            else
+            {
+                model.Geometry = null;
+            }
         }
 
         public void UpdateLabel(ILabelMap label)
-        {
+        {            
             GeometryModel3D model;
             if (!_models.TryGetValue(label.Name, out model))
             {
@@ -115,15 +126,30 @@ namespace Wpf3DView
                     GeometryModel3D cropModel;
                     if (_cropModels.TryGetValue(label.Name, out cropModel))
                     {
-                        InitCropModelProperties(cropModel, label);
+                        UpdateCropBox(cropModel, label);
                     }
                 };
             }
 
-            model.Geometry = BuildModelGeo(label);
-            InitModelProperties(model, label);
+            _busyIndicator.IsBusy = true;
 
-            UpdateView();
+            Task.Factory.StartNew(() =>
+            {
+                var geo = BuildModelGeo(label);
+                geo.Freeze();
+                return geo;
+            }).ContinueWith(
+                (t) =>
+                {
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        model.Geometry = t.Result;
+                        _busyIndicator.IsBusy = false;
+                        UpdateView();
+                    });
+                });
+
+            InitModelProperties(model, label); 
         }
 
         private MeshGeometry3D BuildModelGeo(ILabelMap label)
@@ -160,16 +186,8 @@ namespace Wpf3DView
 
         private void InitCropModelProperties(GeometryModel3D model, ILabelMap label)
         {
-            Color color = Colors.White;
-
-            if (!label.Visible || !label.Crop.Visible)
-            {
-                color.A = 0;
-            }
-            else
-            {
-                color.A = 70;
-            }
+            Color color = Colors.White;           
+            color.A = 90;
 
             model.Material = new DiffuseMaterial(new SolidColorBrush(color));
         }
@@ -195,13 +213,18 @@ namespace Wpf3DView
             {
                 if (model is GeometryModel3D)
                 {
-                    foreach (var p in ((model as GeometryModel3D).Geometry as MeshGeometry3D).Positions)
-                    {
-                        center.X += p.X;
-                        center.Y += p.Y;
-                        center.Z += p.Z;
+                    var geo = ((model as GeometryModel3D).Geometry as MeshGeometry3D);
 
-                        counter++;
+                    if (geo != null)
+                    {
+                        foreach (var p in geo.Positions)
+                        {
+                            center.X += p.X;
+                            center.Y += p.Y;
+                            center.Z += p.Z;
+
+                            counter++;
+                        }
                     }
                 }
             }
