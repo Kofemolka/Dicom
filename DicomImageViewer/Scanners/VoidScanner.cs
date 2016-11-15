@@ -87,47 +87,12 @@ namespace DicomImageViewer.Scanners
                 RemoveSharpEdges();
             }
 
-            CalculateVolume();
+            Helpers.CalculateVolume(_labelMap(), _scanData);
 
             _labelMap().FireUpdate();
 
             Task.Factory.StartNew(GC.Collect);
-        }
-
-        private void CalculateVolume()
-        {
-            var volume = 0.0d;
-            var guard = new object();
-
-            Parallel.ForEach(_labelMap().GetCenters(), d =>
-            {
-                var proj = _labelMap().GetProjection(Axis.Z, d.Z).ToList();
-                proj.Add(proj.Last());
-
-                var area = 0.0d;
-
-                for (int v = 0; v < proj.Count-1; v++)
-                {
-                    var a = Math.Sqrt(Math.Pow(proj[v].X - d.X, 2) + Math.Pow(proj[v].Y - d.Y, 2));
-                    var b = Math.Sqrt(Math.Pow(proj[v + 1].X - d.X, 2) + Math.Pow(proj[v + 1].Y - d.Y, 2));
-                    var c = Math.Sqrt(Math.Pow(proj[v + 1].X - proj[v].X, 2) + Math.Pow(proj[v + 1].Y - proj[v].Y, 2));
-
-                    var s = (a + b + c) / 2;
-
-                    area += Math.Sqrt(s * Math.Abs(s - a) * Math.Abs(s - b) * Math.Abs(s - c));
-                }
-
-                lock (guard)
-                {
-                    volume += area;
-                }
-            });
-
-            double xres, yres, zres;
-            _scanData.Resolution(out xres, out yres, out zres);
-
-            _labelMap().Volume = (int)(volume * xres * yres * zres);
-        }
+        }        
 
         private Point3D ScanProjection(Point3D point, Axis axis, Probe fixProbe)
         {

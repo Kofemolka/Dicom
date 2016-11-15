@@ -56,25 +56,27 @@ namespace DicomImageViewer.Scanners
             }));
 
 
-            //tasks.Add(Task.Factory.StartNew(() =>
-            //{
-            //    Point3D center = point;
+            tasks.Add(Task.Factory.StartNew(() =>
+            {
+                Point3D center = point;
 
-            //    ////go down
-            //    for (var h = point[Axis.Z] - 1; h >= crop.ZL; h--)
-            //    {
-            //        var p = new Point3D(center)
-            //        {
-            //            [Axis.Z] = h
-            //        };
+                ////go down
+                for (var h = point[Axis.Z] - 1; h >= crop.ZL; h--)
+                {
+                    var p = new Point3D(center)
+                    {
+                        [Axis.Z] = h
+                    };
 
-            //        center = ScanProjection(p, fixProbe);
+                    center = ScanProjection(p, fixProbe);
 
-            //        progress.Tick();
-            //    }
-            //}));
+                    progress.Tick();
+                }
+            }));
 
             Task.WaitAll(tasks.ToArray());
+
+            Helpers.CalculateVolume(_labelMap(), _scanData);
 
             _labelMap().FireUpdate();
         }
@@ -109,7 +111,7 @@ namespace DicomImageViewer.Scanners
 
                 _labelMap().Add(point3Ds);
 
-                _labelMap().AddCenter(point);
+                _labelMap().AddCenter(center);
 
                 return center;
             }
@@ -134,74 +136,53 @@ namespace DicomImageViewer.Scanners
             var res = new List<Point3D>();
             const int maxPath = 10000;
 
-            Point2D current = start;
-            Point2D prev = new Point2D(current.X - 1, current.Y);
-
-            Direction lastDirection = Direction.E; //to the right
-            Direction nN = Direction.NW;
-            Direction nNStart = nN;
+            Point2D current = start;            
+                        
+            Direction dir = Direction.E;
+            dir = TurnLeft(dir);     
 
             Point2D test;
 
             int path = 0;
             do
-            {
-                do
+            {                
+                bool edge;
+                test = GetNextNeighbor(current, dir, Z, out edge);                
+
+                if(edge || !SafeCheckProbe(fixProbe, proj, test))
                 {
-                    bool edge;
-                    test = GetNextNeighbor(current, nN, Z, out edge);
-                    if(edge)
-                    {
-                        break;
-                    }
-                    else if(!SafeCheckProbe(fixProbe, proj, test)) //edge found by crop or probe)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        nN++;
-                        if ((int)nN >= _N.Length)
-                        {
-                            nN = 0;
-                        }
+                    res.Add(test.To3D(Axis.Z, Z));                    
+                    dir = TurnLeft(dir);
+                }
+                else
+                {
+                    dir = TurnRight(dir);
+                }
 
-                        if (nN == nNStart)
-                        {
-                            break;
-                        }
-                    }
-                } while (true);
-
-                res.Add(test.To3D(Axis.Z, Z));
-
-                prev = current;               
                 current = test;
-
-                Direction tmp = nN;
-                nN = (Direction)(((int)lastDirection + 4 + 1) % 7);
-                lastDirection = tmp;
-
-                nNStart = nN;              
             } while (!test.Equals(start) && (path++ < maxPath)); //until got back to start or max path reached
 
             return res;
         }
 
-        private Point2D GetNextNeighbor(Point2D p, Direction ndx, int Z, out bool edge)
+        private static Direction TurnLeft(Direction dir)
+        {
+            return (Direction)(((int)dir + 6) % 8);
+        }
+
+        private static Direction TurnRight(Direction dir)
+        {
+            return (Direction)(((int)dir + 2) % 8);
+        }
+
+        private Point2D GetNextNeighbor(Point2D p, Direction dir, int Z, out bool edge)
         {
             edge = false;
-
-            if (!_labelMap().Crop.IsInCrop(p.To3D(Axis.Z, Z)))
-            {
-                edge = true;
-                return p;
-            }
-
-            var np = new Point2D(p.X + _N[(int)ndx].X, p.Y + _N[(int)ndx].Y);
-            var crop = _labelMap().Crop;
             
-            if(np.X > (crop.XR - 2) ||
+            var np = new Point2D(p.X + _N[(int)dir].X, p.Y + _N[(int)dir].Y);
+            var crop = _labelMap().Crop;
+
+            if (np.X > (crop.XR - 2) ||
                np.X < (crop.XL + 1) ||
                np.Y > (crop.YR - 2) ||
                np.Y < (crop.YL + 1))
@@ -209,9 +190,9 @@ namespace DicomImageViewer.Scanners
                 edge = true;
             }
 
-            return np;            
+            return np;
         }
-
+        
         private bool SafeCheckProbe(Probe probe, Projection proj, Point2D p)
         {
             if (p.X < 0 || p.X >= proj.Width ||
@@ -234,33 +215,5 @@ namespace DicomImageViewer.Scanners
             new Model.Point2D(0, 1),
             new Model.Point2D(-1, 1)
         };
-
-        //private int FindNeighborhood(Point2D p, Point2D start, Projection proj)
-        //{
-        //    var crop = _labelMap().Crop;
-
-        //    _N[0].Edge = (p.Y < (crop.YL + 1)) || (p.X + _N[0].point.X) < (crop.XL + 1);                 //W
-        //    _N[1].Edge = _N[0].Edge || ((p.Y + _N[1].point.Y) < (crop.YL + 1)); //NW
-        //    _N[2].Edge = (p.X < (crop.XL + 1)) || (p.Y + _N[2].point.Y) < (crop.YL + 1);                 //N
-        //    _N[3].Edge = _N[2].Edge || ((p.X + _N[3].point.X) > (crop.YR - 1)); //NE
-        //    _N[4].Edge = (p.X > (crop.XR - 1)) || (p.X + _N[4].point.X) > (crop.XR - 1);                 //E
-        //    _N[5].Edge = _N[4].Edge || ((p.Y + _N[5].point.Y) > (crop.YR - 1)); //SE
-        //    _N[6].Edge = (p.Y > (crop.YR - 1)) || (p.Y + _N[6].point.Y) > (crop.YR - 1);                 //S
-        //    _N[7].Edge = _N[6].Edge || ((p.X + _N[7].point.X) < (crop.XL + 1)); //SW
-                       
-        //    int ndx = 0;
-        //    foreach(var n in _N)
-        //    {
-        //        if(start.X == (n.point.X + p.X) &&
-        //            start.Y == (n.point.Y + p.Y))
-        //        {
-        //            return ndx == (_N.Length - 1) ? 0 : ++ndx;
-        //        }
-
-        //        ndx++;
-        //    }
-
-        //    return 0;
-        //}           
     }
 }
