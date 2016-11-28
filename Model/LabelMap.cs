@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Model.Annotations;
+using Model.Scanners;
 
 namespace Model
 {
@@ -22,15 +23,12 @@ namespace Model
         int Volume { get; set; }
         System.Drawing.Color Color { get; set; }
         bool Transparent { get; set; }
-        BuildMethod BuildMethod { get; set; }
+       
+        IScannerProperties ScannerProperties { get; set; }
 
         ICropBox Crop { get; set; }
         bool CropVisible { get; set; }
     
-#if DEBUG
-        void AddDebugPoint(Point3D point);
-        IEnumerable<Point3D> GetDebugProjection(Axis axis, int index);
-#endif
         void Add(Point3D point);
         void Add(IEnumerable<Point3D> points);
         void AddCenter(Point3D point);
@@ -45,13 +43,20 @@ namespace Model
 
         event LabelDataChangedEvent LabelDataChanged;
         event LabelPropertiesChangedEvent LabelPropertiesChanged;
+
+#if DEBUG
+        void AddDebugPoint(Point3D point);
+        IEnumerable<Point3D> GetDebugProjection(Axis axis, int index);
+#endif
     }
 
     public class LabelMap : ILabelMap
     {
         private readonly List<Point3D> _marks = new List<Point3D>();
         private readonly List<Point3D> _centers = new List<Point3D>();
-        
+
+        public IScannerProperties ScannerProperties { get; set; } = new VoidScanner.VoidScannerProperties();
+
         public ICropBox Crop { get; set; }
 
         public bool CropVisible

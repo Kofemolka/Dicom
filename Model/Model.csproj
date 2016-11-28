@@ -52,6 +52,12 @@
     <Compile Include="Projection.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scanners\EdgeScanner.cs" />
+    <Compile Include="Scanners\Helpers.cs" />
+    <Compile Include="Scanners\IScannerProperties.cs" />
+    <Compile Include="Scanners\Probe.cs" />
+    <Compile Include="Scanners\ThresholdScanner.cs" />
+    <Compile Include="Scanners\VoidScanner.cs" />
     <Compile Include="ScanSet.cs" />
     <Compile Include="Slice.cs" />
     <Compile Include="TypeOfDicomFile.cs" />

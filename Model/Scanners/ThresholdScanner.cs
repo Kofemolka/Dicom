@@ -1,18 +1,25 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Model;
-using Model.Utils;
 using System.Threading;
+using System.Threading.Tasks;
+using Model.Utils;
 
-namespace DicomImageViewer.Scanners
+namespace Model.Scanners
 {
     public class ThresholdScanner
     {
+        public class ThresholdScannerProperties : IScannerProperties
+        {
+            public Point3D LastScanPoint { get; set; }
+            public BuildMethod BuildMethod => BuildMethod.Threshold;
+
+            public ushort Threshold { get; set; } = 2;
+        }
+
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-
-        public ushort Threshold { get; set; } = 2;
+        
+        public ThresholdScannerProperties ScannerProperties { get; set; } = new ThresholdScannerProperties();
 
         public ThresholdScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
@@ -24,7 +31,11 @@ namespace DicomImageViewer.Scanners
         public void Build(Point3D point, IProgress progress)
         {
             _labelMap().Reset();
-            _labelMap().BuildMethod = BuildMethod.Threshold;
+            _labelMap().ScannerProperties = new ThresholdScannerProperties()
+            {
+                LastScanPoint = ScannerProperties.LastScanPoint,
+                Threshold = ScannerProperties.Threshold
+            };
 
             var crop = _labelMap().Crop;
 
@@ -32,7 +43,7 @@ namespace DicomImageViewer.Scanners
             progress.Max(crop.ZR - crop.ZL);
             progress.Reset();
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.Average, Threshold, Threshold);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.Average, ScannerProperties.Threshold, ScannerProperties.Threshold);
             
             int volume = 0;
             const int MaxPoints = 10*1000*1000;

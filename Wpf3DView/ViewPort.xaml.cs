@@ -155,7 +155,7 @@ namespace Wpf3DView
         private MeshGeometry3D BuildModelGeo(ILabelMap label)
         {
             MeshGeometry3D geo = null;
-            switch (label.BuildMethod)
+            switch (label.ScannerProperties.BuildMethod)
             {
                 case Model.BuildMethod.RayCasting:
                     geo = BuildMesh(label.GetAll());

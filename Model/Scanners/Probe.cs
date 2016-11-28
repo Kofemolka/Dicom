@@ -1,7 +1,6 @@
 ﻿using System;
-using Model;
 
-namespace DicomImageViewer.Scanners
+namespace Model.Scanners
 {
     class Probe
     {

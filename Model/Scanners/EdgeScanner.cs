@@ -1,22 +1,29 @@
-﻿using Model;
-using Model.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Model.Utils;
 
-namespace DicomImageViewer.Scanners
+namespace Model.Scanners
 {
-    public class EdgeFinder
+    public class EdgeScanner
     {
+        public class EdgeScannerProperties : IScannerProperties
+        {
+            public Point3D LastScanPoint { get; set; }
+
+            public BuildMethod BuildMethod => BuildMethod.Threshold;
+
+            public ushort Threshold { get; set; } = 2;
+        }
+
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
 
-        public ushort Threshold { get; set; } = 2;
+        public EdgeScannerProperties ScannerProperties { get; set; } = new EdgeScannerProperties();
 
-        public EdgeFinder(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
+        public EdgeScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
             _scanData = scanData;
             _labelMap = labelMap;
@@ -26,7 +33,11 @@ namespace DicomImageViewer.Scanners
         public void Build(Point3D point, IProgress progress)
         {
             _labelMap().Reset();
-            _labelMap().BuildMethod = BuildMethod.Threshold;
+            _labelMap().ScannerProperties = new EdgeScannerProperties()
+            {
+                LastScanPoint = ScannerProperties.LastScanPoint,
+                Threshold = ScannerProperties.Threshold
+            };
 
             var crop = _labelMap().Crop;
 
@@ -34,7 +45,7 @@ namespace DicomImageViewer.Scanners
             progress.Max(crop.ZR - crop.ZL);
             progress.Reset();
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, Threshold, Threshold);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, ScannerProperties.Threshold, ScannerProperties.Threshold);
 
             var tasks = new List<Task>();
             tasks.Add(Task.Factory.StartNew(() =>

@@ -1,21 +1,40 @@
-﻿using DicomImageViewer.Scanners;
-using System;
+﻿using System;
 using System.Windows.Forms;
 using Model;
 using Model.Utils;
 using System.Threading.Tasks;
+using Model.Scanners;
 
 namespace DicomImageViewer.View
 {
-    public partial class ThresholdProperties : UserControl, IScannerProperties
+    public partial class ThresholdPropertiesView : UserControl, IScannerPropertiesView
     {
         private Form Owner { get; set; }
         private IProgress Progress { get; set; }
         private ThresholdScanner Scanner { get; set; }
 
-        private Point3D _lastRayCast;
+        IScannerProperties IScannerPropertiesView.Properties
+        {
+            get { return Scanner.ScannerProperties; }
 
-        public ThresholdProperties()
+            set
+            {
+                var properties = value as ThresholdScanner.ThresholdScannerProperties;
+                if (properties != null)
+                {
+                    Scanner.ScannerProperties = properties;
+
+                    UpdateView();
+                }
+            }
+        }
+
+        private void UpdateView()
+        {
+            trackThresh.Value = Scanner.ScannerProperties.Threshold;
+        }
+
+        public ThresholdPropertiesView()
         {
             InitializeComponent();
         }
@@ -26,30 +45,30 @@ namespace DicomImageViewer.View
             Progress = progress;
             Scanner = scanner;
 
-            trackThresh.Value = Scanner.Threshold;           
+            UpdateView();
 
             Parent.Tag = this;
         }
 
         private void trackThresh_ValueChanged(object sender, EventArgs e)
         {
-            Scanner.Threshold = (ushort)trackThresh.Value;
-            lbThresh.Text = "Threshold: " + Scanner.Threshold;
+            Scanner.ScannerProperties.Threshold = (ushort)trackThresh.Value;
+            lbThresh.Text = "Threshold: " + Scanner.ScannerProperties.Threshold;
         }
 
         private void btnRebuild_Click(object sender, EventArgs e)
         {
-            Scan(_lastRayCast);
+            Scan(Scanner.ScannerProperties.LastScanPoint);
         }
 
         public void Scan(Point3D point)
         {
             if (point != null)
             {
-                _lastRayCast = point;
+                Scanner.ScannerProperties.LastScanPoint = point;
             }
 
-            if (_lastRayCast == null)
+            if (Scanner.ScannerProperties.LastScanPoint == null)
             {
                 return;
             }
@@ -59,7 +78,7 @@ namespace DicomImageViewer.View
 
             Task.Factory.StartNew(() =>
             {
-                Scanner.Build(_lastRayCast, Progress);
+                Scanner.Build(Scanner.ScannerProperties.LastScanPoint, Progress);
             }).ContinueWith((t) =>
             {
                 Owner.Enabled = true;

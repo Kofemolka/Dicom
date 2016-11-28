@@ -72,7 +72,6 @@ namespace Model
                 LabelMapCurrentSelectionChanged?.Invoke();
             }
         }
-        
 
         public void Add()
         {

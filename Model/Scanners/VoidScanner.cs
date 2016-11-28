@@ -2,23 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Model;
 using Model.Utils;
 
-namespace DicomImageViewer.Scanners
+namespace Model.Scanners
 {
     public class VoidScanner
     {
+        public class VoidScannerProperties : IScannerProperties
+        {
+            public Point3D LastScanPoint { get; set; }
+            public BuildMethod BuildMethod => BuildMethod.RayCasting;
+
+            public int MaxSkip { get; set; } = 6;
+            public ushort thUp { get; set; } = 5;
+            public ushort thDown { get; set; } = 5;
+            public int Rays { get; set; } = 360;
+            public bool OptimizePlanes { get; set; } = true;
+            public int Smoothness { get; set; } = 10;
+        }
+
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-
-        public int MaxSkip { get; set; } = 6;
-        public ushort thUp { get; set; } = 5;
-        public ushort thDown { get; set; } = 5;
-        public int Rays { get; set; } = 360;
-        public bool OptimizePlanes { get; set; } = true;
-        public int Smoothness { get; set; } = 10;
+        
+        public VoidScannerProperties ScannerProperties { get; set; } = new VoidScannerProperties();
 
         public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
         {
@@ -30,9 +37,18 @@ namespace DicomImageViewer.Scanners
         public void Build(Point3D point, Axis axis, IProgress progress)
         {
             _labelMap().Reset();
-            _labelMap().BuildMethod = BuildMethod.RayCasting;
+            _labelMap().ScannerProperties = new VoidScannerProperties()
+            {
+                LastScanPoint = ScannerProperties.LastScanPoint,
+                MaxSkip = ScannerProperties.MaxSkip,
+                OptimizePlanes = ScannerProperties.OptimizePlanes,
+                Rays = ScannerProperties.Rays,
+                Smoothness = ScannerProperties.Smoothness,
+                thDown = ScannerProperties.thDown,
+                thUp = ScannerProperties.thUp
+            };
 
-            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, thUp, thDown);
+            var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, ScannerProperties.thUp, ScannerProperties.thDown);
 
             var heightMap = BuildHeightMap(point, axis, fixProbe);
             var maxHeight = heightMap.Keys.Max();
@@ -82,7 +98,7 @@ namespace DicomImageViewer.Scanners
 
             Task.WaitAll(tasks.ToArray());
 
-            if (OptimizePlanes)
+            if (ScannerProperties.OptimizePlanes)
             {
                 RemoveSharpEdges();
             }
@@ -131,9 +147,9 @@ namespace DicomImageViewer.Scanners
 
             var scalarPoint = point.To2D(projection.Axis);
 
-            var rayOffset = Math.PI * 2 / Rays;
+            var rayOffset = Math.PI * 2 / ScannerProperties.Rays;
 
-            for (int r = 0; r < Rays; r++)
+            for (int r = 0; r < ScannerProperties.Rays; r++)
             {
                 var angle = r * rayOffset;
                 var p2d = Cast(scalarPoint, angle, projection, probe);
@@ -198,7 +214,7 @@ namespace DicomImageViewer.Scanners
                     skipped = 0;
                 }
 
-                if (skipped >= MaxSkip)
+                if (skipped >= ScannerProperties.MaxSkip)
                 {
                     break;
                 }
@@ -226,7 +242,7 @@ namespace DicomImageViewer.Scanners
 
                         var avrg = Math.Abs((l + r) / 2);
 
-                        if (Math.Abs(F - avrg) > (avrg / Smoothness))
+                        if (Math.Abs(F - avrg) > (avrg / ScannerProperties.Smoothness))
                         {
                             proj[v].X = (proj[v - 1].X + proj[v + 1].X) / 2;
                             proj[v].Y = (proj[v - 1].Y + proj[v + 1].Y) / 2;

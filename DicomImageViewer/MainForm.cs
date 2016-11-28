@@ -1,23 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using System.Linq;
 using System.Threading.Tasks;
-using DicomImageViewer.Scanners;
-using System.Windows.Forms.Integration;
 using DicomImageViewer.Export;
 using Model;
 using Model.Utils;
 using DicomImageViewer.View;
+using Model.Scanners;
 
 namespace DicomImageViewer
 {
     public enum ImageBitsPerPixel { Eight, Sixteen, TwentyFour };
-    public enum ViewSettings { Zoom1_1, ZoomToFit };
-
+    
     public partial class MainForm : Form, IProbe
     {
         private ProjectionView projectionViewX;
@@ -29,17 +23,9 @@ namespace DicomImageViewer
         private readonly LabelMapSet _labelMapSet;
         private readonly VoidScanner _voidScanner;
         private readonly ThresholdScanner _threshScanner;
-        private readonly EdgeFinder _edgeScanner;
-
-        private readonly DicomDecoder _dd;
-
+        private readonly EdgeScanner _edgeScanner;
+        
         private View.View3D _3dView;
-
-        private double winCentre;
-        private double winWidth;
-
-        private int maxPixelValue; // Updated July 2012
-        private int minPixelValue;
 
         public View.View3D View3D => _3dView;
 
@@ -49,19 +35,17 @@ namespace DicomImageViewer
             _lookupTable = new LookupTable(_scanSet);
             _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
             _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
-            _edgeScanner = new EdgeFinder(_scanSet, _lookupTable, () => _labelMapSet.Current);
+            _edgeScanner = new EdgeScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
 
             InitializeComponent();
 
-            rayCastingProperties.Init(_voidScanner, new Progress(progBar), this);
-            thresholdProperties.Init(_threshScanner, new Progress(progBar), this);
+            _rayCastingPropertiesView.Init(_voidScanner, new Progress(progBar), this);
+            _thresholdPropertiesView.Init(_threshScanner, new Progress(progBar), this);
             edgeFinderProperties1.Init(_edgeScanner, new Progress(progBar), this);
 
             labelMapView.LabelMapSet = _labelMapSet;
             labelMapView.Init();
-
-            _dd = new DicomDecoder();
-
+            
             _3dView = new View.View3D(_labelMapSet);
             _3dView.Dock = DockStyle.Fill;
 
@@ -69,10 +53,46 @@ namespace DicomImageViewer
             projectionViewY = new ProjectionView(Axis.Y, _scanSet, _lookupTable, _labelMapSet, this);
             projectionViewZ = new ProjectionView(Axis.Z, _scanSet, _lookupTable, _labelMapSet, this);
 
-            maxPixelValue = 0;
-            minPixelValue = 65535;
+            _labelMapSet.LabelMapCurrentSelectionChanged += LabelMapSetOnLabelMapCurrentSelectionChanged;
+
 
             InitUI();
+        }
+
+        private void LabelMapSetOnLabelMapCurrentSelectionChanged()
+        {
+            if(_labelMapSet.Current.ScannerProperties is ThresholdScanner.ThresholdScannerProperties)
+            {
+                var view = FindIScannerPropertiesView<ThresholdPropertiesView>();
+
+                view.Properties = _labelMapSet.Current.ScannerProperties;
+            }
+            else if (_labelMapSet.Current.ScannerProperties is EdgeScanner.EdgeScannerProperties)
+            {
+                var view = FindIScannerPropertiesView<EdgeFinderPropertiesView>();
+
+                view.Properties = _labelMapSet.Current.ScannerProperties;
+            }
+            else if (_labelMapSet.Current.ScannerProperties is VoidScanner.VoidScannerProperties)
+            {
+                var view = FindIScannerPropertiesView<RayCastingPropertiesView>();
+
+                view.Properties = _labelMapSet.Current.ScannerProperties;
+            }
+        }
+
+        private IScannerPropertiesView FindIScannerPropertiesView<T>()
+        {
+            foreach (TabPage tabPage in tabsScanners.TabPages)
+            {
+                if (tabPage.Tag.GetType() == typeof (T))
+                {
+                    tabsScanners.SelectedTab = tabPage;
+                    return tabPage.Tag as IScannerPropertiesView;
+                }
+            }
+
+            return null;
         }
 
         private void InitUI()
@@ -110,36 +130,7 @@ namespace DicomImageViewer
             this.tableLayoutPanel1.Controls.Add(this.projectionViewZ, 0, 3);
             this.tableLayoutPanel1.Controls.Add(_3dView, 1, 1);
         }
-
-        private void UpdateScanInfo()
-        {
-            winCentre = _scanSet.windowCentre;
-            winWidth = _scanSet.windowWidth;
-
-            //bnSave.Enabled = true;
-            bnTags.Enabled = true;
-
-            Text = "DICOM Image Viewer: ";
-
-            _scanSet.MinMaxDencity(out minPixelValue, out maxPixelValue);
-
-            if (_scanSet.signedImage)
-            {
-                winCentre -= short.MinValue;
-            }
-
-            if (Math.Abs(winWidth) < 0.001)
-            {
-                winWidth = maxPixelValue - minPixelValue;
-            }
-
-            if ((winCentre == 0) ||
-                (minPixelValue > winCentre) || (maxPixelValue < winCentre))
-            {
-                winCentre = (maxPixelValue + minPixelValue)/2;
-            }
-        }
-
+        
         private void bnTags_Click(object sender, EventArgs e)
         {
             var dtg = new DicomTagsForm();
@@ -151,13 +142,7 @@ namespace DicomImageViewer
         {
             _3dView.Load();
         }
-
-        public void UpdateWindowLevel(int winWidth, int winCentre, ImageBitsPerPixel bpp)
-        {
-            int winMin = Convert.ToInt32(winCentre - 0.5*winWidth);
-            int winMax = winMin + winWidth;
-        }
-
+        
         private void btnOpenSeries_Click(object sender, EventArgs e)
         {
             using (var dlg = new FolderBrowserDialog())
@@ -190,8 +175,6 @@ namespace DicomImageViewer
 
                         Properties.Settings.Default.LastFolder = dlg.SelectedPath;
                         Properties.Settings.Default.Save();
-
-                        UpdateScanInfo();
                     }, TaskScheduler.FromCurrentSynchronizationContext());
                 }
             }
@@ -222,12 +205,9 @@ namespace DicomImageViewer
 
         public void PointSelect(Point3D point)
         {
-            var scanProp = (tabsScanners.SelectedTab.Tag as IScannerProperties);
+            var scanProp = (tabsScanners.SelectedTab.Tag as IScannerPropertiesView);
 
-            if (scanProp != null)
-            {
-                scanProp.Scan(point);
-            }
+            scanProp?.Scan(point);
         }
 
         private void btnExport_Click(object sender, EventArgs e)

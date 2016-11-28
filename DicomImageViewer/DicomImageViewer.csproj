@@ -76,7 +76,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>DicomImageViewer_TemporaryKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -146,17 +147,17 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\EdgeFinderProperties.resx">
-      <DependentUpon>EdgeFinderProperties.cs</DependentUpon>
+    <EmbeddedResource Include="View\EdgeFinderPropertiesView.resx">
+      <DependentUpon>EdgeFinderPropertiesView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\LabelMapView.resx">
       <DependentUpon>LabelMapView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\RayCastingProperties.resx">
-      <DependentUpon>RayCastingProperties.cs</DependentUpon>
+    <EmbeddedResource Include="View\RayCastingPropertiesView.resx">
+      <DependentUpon>RayCastingPropertiesView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\ThresholdProperties.resx">
-      <DependentUpon>ThresholdProperties.cs</DependentUpon>
+    <EmbeddedResource Include="View\ThresholdPropertiesView.resx">
+      <DependentUpon>ThresholdPropertiesView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="View\View3D.resx">
       <DependentUpon>View3D.cs</DependentUpon>
@@ -170,7 +171,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <None Include="app.config" />
-    <None Include="DicomImageViewer_TemporaryKey.pfx" />
     <None Include="Properties\DataSources\DicomImageViewer.View.LabelMapView.datasource" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -181,35 +181,30 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Scanners\EdgeFinder.cs" />
-    <Compile Include="Scanners\Helpers.cs" />
-    <Compile Include="Scanners\Probe.cs" />
-    <Compile Include="Scanners\ThresholdScanner.cs" />
-    <Compile Include="Scanners\VoidScanner.cs" />
-    <Compile Include="View\EdgeFinderProperties.cs">
+    <Compile Include="View\EdgeFinderPropertiesView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\EdgeFinderProperties.Designer.cs">
-      <DependentUpon>EdgeFinderProperties.cs</DependentUpon>
+    <Compile Include="View\EdgeFinderPropertiesView.Designer.cs">
+      <DependentUpon>EdgeFinderPropertiesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\IScannerProperties.cs" />
+    <Compile Include="View\IScannerPropertiesView.cs" />
     <Compile Include="View\LabelMapView.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="View\LabelMapView.Designer.cs">
       <DependentUpon>LabelMapView.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\RayCastingProperties.cs">
+    <Compile Include="View\RayCastingPropertiesView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\RayCastingProperties.Designer.cs">
-      <DependentUpon>RayCastingProperties.cs</DependentUpon>
+    <Compile Include="View\RayCastingPropertiesView.Designer.cs">
+      <DependentUpon>RayCastingPropertiesView.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\ThresholdProperties.cs">
+    <Compile Include="View\ThresholdPropertiesView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="View\ThresholdProperties.Designer.cs">
-      <DependentUpon>ThresholdProperties.cs</DependentUpon>
+    <Compile Include="View\ThresholdPropertiesView.Designer.cs">
+      <DependentUpon>ThresholdPropertiesView.cs</DependentUpon>
     </Compile>
     <Compile Include="View\View3D.cs">
       <SubType>UserControl</SubType>

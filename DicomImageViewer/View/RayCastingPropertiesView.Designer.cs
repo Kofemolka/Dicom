@@ -1,6 +1,6 @@
 ﻿namespace DicomImageViewer.View
 {
-    partial class RayCastingProperties
+    partial class RayCastingPropertiesView
     {
         /// <summary> 
         /// Required designer variable.
@@ -166,7 +166,7 @@
             this.trackSmoothness.TabIndex = 34;
             this.trackSmoothness.ValueChanged += new System.EventHandler(this.trackSmoothness_ValueChanged);
             // 
-            // RayCastingProperties
+            // RayCastingPropertiesView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -182,7 +182,7 @@
             this.Controls.Add(this.trackHiThresh);
             this.Controls.Add(this.trackLowThresh);
             this.Controls.Add(this.trackRays);
-            this.Name = "RayCastingProperties";
+            this.Name = "RayCastingPropertiesView";
             this.Size = new System.Drawing.Size(246, 477);
             ((System.ComponentModel.ISupportInitialize)(this.trackSkippedPixels)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackHiThresh)).EndInit();

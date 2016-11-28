@@ -43,12 +43,12 @@ namespace DicomImageViewer
             this.btnExport = new System.Windows.Forms.Button();
             this.tabsScanners = new System.Windows.Forms.TabControl();
             this.tabRayScanner = new System.Windows.Forms.TabPage();
-            this.rayCastingProperties = new DicomImageViewer.View.RayCastingProperties();
+            this._rayCastingPropertiesView = new DicomImageViewer.View.RayCastingPropertiesView();
             this.tabThresh = new System.Windows.Forms.TabPage();
-            this.thresholdProperties = new DicomImageViewer.View.ThresholdProperties();
+            this._thresholdPropertiesView = new DicomImageViewer.View.ThresholdPropertiesView();
             this.tabEdgeFinder = new System.Windows.Forms.TabPage();
             this.labelMapView = new DicomImageViewer.View.LabelMapView();
-            this.edgeFinderProperties1 = new DicomImageViewer.View.EdgeFinderProperties();
+            this.edgeFinderProperties1 = new DicomImageViewer.View.EdgeFinderPropertiesView();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -195,7 +195,7 @@ namespace DicomImageViewer
             // tabRayScanner
             // 
             this.tabRayScanner.BackColor = System.Drawing.SystemColors.Control;
-            this.tabRayScanner.Controls.Add(this.rayCastingProperties);
+            this.tabRayScanner.Controls.Add(this._rayCastingPropertiesView);
             this.tabRayScanner.Location = new System.Drawing.Point(4, 22);
             this.tabRayScanner.Name = "tabRayScanner";
             this.tabRayScanner.Padding = new System.Windows.Forms.Padding(3);
@@ -203,19 +203,19 @@ namespace DicomImageViewer
             this.tabRayScanner.TabIndex = 0;
             this.tabRayScanner.Text = "Rays";
             // 
-            // rayCastingProperties
+            // RayCastingPropertiesView
             // 
-            this.rayCastingProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.rayCastingProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rayCastingProperties.Location = new System.Drawing.Point(3, 3);
-            this.rayCastingProperties.Name = "rayCastingProperties";
-            this.rayCastingProperties.Size = new System.Drawing.Size(248, 347);
-            this.rayCastingProperties.TabIndex = 0;
+            this._rayCastingPropertiesView.BackColor = System.Drawing.SystemColors.Control;
+            this._rayCastingPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._rayCastingPropertiesView.Location = new System.Drawing.Point(3, 3);
+            this._rayCastingPropertiesView.Name = "_rayCastingPropertiesView";
+            this._rayCastingPropertiesView.Size = new System.Drawing.Size(248, 347);
+            this._rayCastingPropertiesView.TabIndex = 0;
             // 
             // tabThresh
             // 
             this.tabThresh.BackColor = System.Drawing.SystemColors.Control;
-            this.tabThresh.Controls.Add(this.thresholdProperties);
+            this.tabThresh.Controls.Add(this._thresholdPropertiesView);
             this.tabThresh.Location = new System.Drawing.Point(4, 22);
             this.tabThresh.Name = "tabThresh";
             this.tabThresh.Padding = new System.Windows.Forms.Padding(3);
@@ -223,14 +223,14 @@ namespace DicomImageViewer
             this.tabThresh.TabIndex = 1;
             this.tabThresh.Text = "Threashold";
             // 
-            // thresholdProperties
+            // ThresholdPropertiesView
             // 
-            this.thresholdProperties.BackColor = System.Drawing.SystemColors.Control;
-            this.thresholdProperties.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.thresholdProperties.Location = new System.Drawing.Point(3, 3);
-            this.thresholdProperties.Name = "thresholdProperties";
-            this.thresholdProperties.Size = new System.Drawing.Size(248, 347);
-            this.thresholdProperties.TabIndex = 0;
+            this._thresholdPropertiesView.BackColor = System.Drawing.SystemColors.Control;
+            this._thresholdPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._thresholdPropertiesView.Location = new System.Drawing.Point(3, 3);
+            this._thresholdPropertiesView.Name = "_thresholdPropertiesView";
+            this._thresholdPropertiesView.Size = new System.Drawing.Size(248, 347);
+            this._thresholdPropertiesView.TabIndex = 0;
             // 
             // tabEdgeFinder
             // 
@@ -298,11 +298,11 @@ namespace DicomImageViewer
         private System.Windows.Forms.TabControl tabsScanners;
         private System.Windows.Forms.TabPage tabRayScanner;
         private System.Windows.Forms.TabPage tabThresh;
-        private View.RayCastingProperties rayCastingProperties;
-        private View.ThresholdProperties thresholdProperties;
+        private View.RayCastingPropertiesView _rayCastingPropertiesView;
+        private View.ThresholdPropertiesView _thresholdPropertiesView;
         private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.TabPage tabEdgeFinder;
-        private View.EdgeFinderProperties edgeFinderProperties1;
+        private View.EdgeFinderPropertiesView edgeFinderProperties1;
     }
 }
 
