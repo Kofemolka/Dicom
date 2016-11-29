@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Model.Annotations;
 using Model.Scanners;
 
@@ -18,6 +19,7 @@ namespace Model
 
     public interface ILabelMap : INotifyPropertyChanged
     {
+        int Id { get; }
         bool Visible { get; set; }
         string Name { get; set; }
         int Volume { get; set; }
@@ -54,6 +56,17 @@ namespace Model
     {
         private readonly List<Point3D> _marks = new List<Point3D>();
         private readonly List<Point3D> _centers = new List<Point3D>();
+
+        private readonly int _id;
+        private static int _idGenerator = 0;
+
+        public LabelMap()
+        {
+            Interlocked.Increment(ref _idGenerator);
+            _id = _idGenerator;
+        }
+
+        public int Id => _id;
 
         public IScannerProperties ScannerProperties { get; set; } = new VoidScanner.VoidScannerProperties();
 

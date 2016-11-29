@@ -20,14 +20,16 @@ namespace Model.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
+        private readonly Func<Point3D, int, bool> _crossCheck;
 
         public EdgeScannerProperties ScannerProperties { get; set; } = new EdgeScannerProperties();
 
-        public EdgeScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
+        public EdgeScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, Func<Point3D, int, bool> crossCheck)
         {
             _scanData = scanData;
             _labelMap = labelMap;
             _lookupTable = lookupTable;
+            _crossCheck = crossCheck;
         }
 
         public void Build(Point3D point, IProgress progress)
@@ -160,7 +162,7 @@ namespace Model.Scanners
                 bool edge;
                 test = GetNextNeighbor(current, dir, Z, out edge);                
 
-                if(edge || !SafeCheckProbe(fixProbe, proj, test))
+                if(edge || !SafeCheckProbe(fixProbe, proj, test) || _crossCheck(test.To3D(Axis.Z, Z), _labelMap().Id))
                 {
                     res.Add(test.To3D(Axis.Z, Z));                    
                     dir = TurnLeft(dir);
