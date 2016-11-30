@@ -110,7 +110,7 @@ namespace Model.Scanners
 
                 var probe = _lookupTable.Map(projection.Pixels[scalarPoint.X, scalarPoint.Y]);
 
-                if (!fixProbe.InRange(probe))
+                if (!fixProbe.InRange(probe) || _crossCheck(scalarPoint.To3D(Axis.Z, point.Z), _labelMap().Id))
                 {
                     break;
                 }

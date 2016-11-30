@@ -24,14 +24,16 @@ namespace Model.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-        
+        private readonly Func<Point3D, int, bool> _crossCheck;
+
         public VoidScannerProperties ScannerProperties { get; set; } = new VoidScannerProperties();
 
-        public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
+        public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, Func<Point3D, int, bool> crossCheck)
         {
             _scanData = scanData;
             _labelMap = labelMap;
             _lookupTable = lookupTable;
+            _crossCheck = crossCheck;
         }
 
         public void Build(Point3D point, Axis axis, IProgress progress)
@@ -199,7 +201,7 @@ namespace Model.Scanners
                 
                 var p3d = new Point2D(px, py).To3D(projection.Axis, projection.AxisPos);
                 Point3D p3dBounded;
-                if (!crop.IsInCrop(p3d, out p3dBounded))
+                if (!crop.IsInCrop(p3d, out p3dBounded) || _crossCheck(p3d, _labelMap().Id))
                 {
                     return p3dBounded.To2D(projection.Axis);
                 }

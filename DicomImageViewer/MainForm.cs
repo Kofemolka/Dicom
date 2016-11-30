@@ -35,8 +35,8 @@ namespace DicomImageViewer
             _labelMapSet = new LabelMapSet(_scanSet, action => this.Invoke(action));
             _lookupTable = new LookupTable(_scanSet);
             _crossChecker = new CrossChecker(_labelMapSet);
-            _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
-            _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current);
+            _voidScanner = new VoidScanner(_scanSet, _lookupTable, () => _labelMapSet.Current, _crossChecker.Check);
+            _threshScanner = new ThresholdScanner(_scanSet, _lookupTable, () => _labelMapSet.Current, _crossChecker.Check);
             _edgeScanner = new EdgeScanner(_scanSet, _lookupTable, () => _labelMapSet.Current, _crossChecker.Check);
 
             InitializeComponent();

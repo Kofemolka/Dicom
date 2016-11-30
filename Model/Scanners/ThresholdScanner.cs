@@ -18,14 +18,16 @@ namespace Model.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-        
+        private readonly Func<Point3D, int, bool> _crossCheck;
+
         public ThresholdScannerProperties ScannerProperties { get; set; } = new ThresholdScannerProperties();
 
-        public ThresholdScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap)
+        public ThresholdScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, Func<Point3D, int, bool> crossCheck)
         {
             _scanData = scanData;
             _labelMap = labelMap;
             _lookupTable = lookupTable;
+            _crossCheck = crossCheck;
         }
 
         public void Build(Point3D point, IProgress progress)
@@ -58,7 +60,7 @@ namespace Model.Scanners
                 {
                     for (int y = crop.YL; y < crop.YR; y++)
                     {
-                        if (fixProbe.InRange(_lookupTable.Map(proj.Pixels[x, y])))
+                        if (fixProbe.InRange(_lookupTable.Map(proj.Pixels[x, y])) && !_crossCheck(new Point3D(x ,y, (int)z), _labelMap().Id))
                         {
                             _labelMap().Add(new Point3D(x, y, (int)z));
                             Interlocked.Increment(ref volume);

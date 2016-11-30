@@ -16,7 +16,7 @@ namespace Model.Scanners
         public bool Check(Point3D point, int layerId)
         {
             bool res = false;
-            Parallel.ForEach(_labelMapSet.All.Where(l => l.Id != layerId), (map, state)=>
+            Parallel.ForEach(_labelMapSet.All.Where(l => l.Id != layerId && l.ScannerProperties.BuildMethod != BuildMethod.Threshold), (map, state)=>
             {
                 var proj = map.GetProjection(Axis.Z, point.Z);
 
@@ -32,7 +32,20 @@ namespace Model.Scanners
 
         private static bool checkProjection(Point2D point, IEnumerable<Point3D> proj)
         {
-            return false;
+            var projList = proj.ToList();
+
+            var c = false;
+            int i, j = 0;
+            for (i = 0, j = projList.Count - 1; i < projList.Count; j = i++)
+            {
+                if (((projList[i].Y > point.Y) != (projList[j].Y > point.Y)) &&
+                    (point.X < (projList[j].X - projList[i].X)*(point.Y - projList[i].Y)/(projList[j].Y - projList[i].Y) + projList[i].X))
+                {
+                    c = !c;
+                }
+            }
+
+            return c;
         }
 
         //int pnpoly(int nvert, float* vertx, float* verty, float testx, float testy)
