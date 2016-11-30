@@ -57,6 +57,7 @@
             this.surface.Paint += new System.Windows.Forms.PaintEventHandler(this.surface_Paint);
             this.surface.MouseClick += new System.Windows.Forms.MouseEventHandler(this.surface_MouseClick);
             this.surface.MouseDown += new System.Windows.Forms.MouseEventHandler(this.surface_MouseDown);
+            this.surface.MouseLeave += new System.EventHandler(this.surface_MouseLeave);
             this.surface.MouseMove += new System.Windows.Forms.MouseEventHandler(this.surface_MouseMove);
             this.surface.MouseUp += new System.Windows.Forms.MouseEventHandler(this.surface_MouseUp);
             // 

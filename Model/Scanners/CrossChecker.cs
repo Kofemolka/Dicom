@@ -4,30 +4,47 @@ using System.Threading.Tasks;
 
 namespace Model.Scanners
 {
-    public class CrossChecker
+    public interface ICrossChecker
+    {
+        void Prepare(int layerId);
+        bool Check(Point3D point, int layerId);
+    }
+
+    public class CrossChecker : ICrossChecker
     {
         private readonly LabelMapSet _labelMapSet;
-
+        private List<ILabelMap> _labelMaps = new List<ILabelMap>();
+         
         public CrossChecker(LabelMapSet labelMapSet)
         {
             _labelMapSet = labelMapSet;
         }
 
+        public void Prepare(int layerId)
+        {
+            _labelMaps = _labelMapSet.All.Where(l => l.Id != layerId && l.ScannerProperties.BuildMethod != BuildMethod.Threshold).ToList();
+        }
+
         public bool Check(Point3D point, int layerId)
         {
-            bool res = false;
-            Parallel.ForEach(_labelMapSet.All.Where(l => l.Id != layerId && l.ScannerProperties.BuildMethod != BuildMethod.Threshold), (map, state)=>
+            foreach (var labelMap in _labelMaps)
             {
-                var proj = map.GetProjection(Axis.Z, point.Z);
+                var crop = labelMap.GetLayerCrop(point.Z);
 
-                if (checkProjection(point.To2D(Axis.Z), proj))
+                var p2d = point.To2D(Axis.Z);
+
+                if (crop.InCrop(p2d))
                 {
-                    state.Stop();
-                    res = true;
+                    var proj = labelMap.GetProjection(Axis.Z, point.Z);
+                    if (checkProjection(p2d, proj))
+                    {
+                        
+                        return true;
+                    }
                 }
-            });
+            }
 
-            return res;
+            return false;
         }
 
         private static bool checkProjection(Point2D point, IEnumerable<Point3D> proj)
@@ -47,17 +64,5 @@ namespace Model.Scanners
 
             return c;
         }
-
-        //int pnpoly(int nvert, float* vertx, float* verty, float testx, float testy)
-        //{
-        //    int i, j, c = 0;
-        //    for (i = 0, j = nvert - 1; i < nvert; j = i++)
-        //    {
-        //        if (((verty[i] > testy) != (verty[j] > testy)) &&
-        //         (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
-        //            c = !c;
-        //    }
-        //    return c;
-        //}
     }
 }

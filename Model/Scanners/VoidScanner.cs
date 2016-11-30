@@ -24,11 +24,11 @@ namespace Model.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-        private readonly Func<Point3D, int, bool> _crossCheck;
+        private readonly ICrossChecker _crossCheck;
 
         public VoidScannerProperties ScannerProperties { get; set; } = new VoidScannerProperties();
 
-        public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, Func<Point3D, int, bool> crossCheck)
+        public VoidScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, ICrossChecker crossCheck)
         {
             _scanData = scanData;
             _labelMap = labelMap;
@@ -49,6 +49,8 @@ namespace Model.Scanners
                 thDown = ScannerProperties.thDown,
                 thUp = ScannerProperties.thUp
             };
+
+            _crossCheck.Prepare(_labelMap().Id);
 
             var fixProbe = Probe.GetStartingProbe(point, _scanData, _lookupTable, Probe.Method.MinMax, ScannerProperties.thUp, ScannerProperties.thDown);
 
@@ -187,26 +189,26 @@ namespace Model.Scanners
 
         private Point2D Cast(Point2D point, double angle, Projection projection, Probe refProbe)
         {
-            int px = point.X;
-            int py = point.Y;
-
+            var p2d = new Point2D(point.X, point.Y);
+            
             int skipped = 0;
 
             var crop = _labelMap().Crop;
-
+            
             for (var l = 0; l < Math.Max(projection.Width, projection.Height); l++)
             {
-                px = (int)(point.X + Math.Cos(angle) * l);
-                py = (int)(point.Y + Math.Sin(angle) * l);
-                
-                var p3d = new Point2D(px, py).To3D(projection.Axis, projection.AxisPos);
+                p2d.X = (int)(point.X + Math.Cos(angle) * l);
+                p2d.Y = (int)(point.Y + Math.Sin(angle) * l);
+
+                var p3d = p2d.To3D(projection.Axis, projection.AxisPos);
+
                 Point3D p3dBounded;
-                if (!crop.IsInCrop(p3d, out p3dBounded) || _crossCheck(p3d, _labelMap().Id))
+                if (!crop.IsInCrop(p3d, out p3dBounded) || _crossCheck.Check(p3d, _labelMap().Id))
                 {
                     return p3dBounded.To2D(projection.Axis);
                 }
 
-                var probe = _lookupTable.Map(projection.Pixels[px, py]);
+                var probe = _lookupTable.Map(projection.Pixels[p2d.X, p2d.Y]);
                 if (!refProbe.InRange(probe))
                 {
                     skipped++;
@@ -222,7 +224,7 @@ namespace Model.Scanners
                 }
             }
 
-            return new Point2D() { X = px, Y = py };
+            return p2d;
         }
 
         private void RemoveSharpEdges()

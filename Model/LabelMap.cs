@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Model.Annotations;
 using Model.Scanners;
 
@@ -14,7 +17,22 @@ namespace Model
     public enum BuildMethod
     {
         RayCasting,
+        EdgeTracing,
         Threshold
+    }
+
+    public class LabelLayerCrop
+    {
+        public int XL { get; set; }
+        public int XR { get; set; }
+        public int YL { get; set; }
+        public int YR { get; set; }
+
+        public bool InCrop(Point2D point)
+        {
+            return point.X >= XL && point.X <= XR &&
+                   point.Y >= YL && point.Y <= YR;
+        }
     }
 
     public interface ILabelMap : INotifyPropertyChanged
@@ -41,6 +59,8 @@ namespace Model
         IEnumerable<Point3D> GetCenters();
         IEnumerable<Point3D> GetAll();
 
+        LabelLayerCrop GetLayerCrop(int zindex);
+
         void FireUpdate();
 
         event LabelDataChangedEvent LabelDataChanged;
@@ -56,6 +76,7 @@ namespace Model
     {
         private readonly List<Point3D> _marks = new List<Point3D>();
         private readonly List<Point3D> _centers = new List<Point3D>();
+        private readonly ConcurrentDictionary<int, LabelLayerCrop> _layerCrops = new ConcurrentDictionary<int, LabelLayerCrop>(); 
 
         private readonly int _id;
         private static int _idGenerator = 0;
@@ -134,6 +155,8 @@ namespace Model
 
         public void FireUpdate()
         {
+            Parallel.ForEach(_layerCrops.Keys, CalculateLayerCrop);
+
             LabelDataChanged?.Invoke();
         }
 
@@ -143,6 +166,8 @@ namespace Model
             {
                 _marks.Add(point);
             }
+
+            _layerCrops.Keys.Add(point.Z);
         }
 
         public void Add(IEnumerable<Point3D> points)
@@ -150,6 +175,11 @@ namespace Model
             lock (_marks)
             {
                 _marks.AddRange(points);
+            }
+
+            if (points.Any())
+            {
+                _layerCrops[points.First().Z] = new LabelLayerCrop();
             }
         }
 
@@ -163,40 +193,40 @@ namespace Model
 
         public IEnumerable<Point3D> GetProjection(Axis axis, int index)
         {
-            foreach (var mark in _marks)
+            lock (_marks)
             {
-                switch (axis)
+                foreach (var mark in _marks)
                 {
-                    case Axis.X:
-                        if (mark.X == index)
-                        {
-                            yield return mark;
-                        }
-                        break;
+                    switch (axis)
+                    {
+                        case Axis.X:
+                            if (mark.X == index)
+                            {
+                                yield return mark;
+                            }
+                            break;
 
-                    case Axis.Y:
-                        if (mark.Y == index)
-                        {
-                            yield return mark;
-                        }
-                        break;
+                        case Axis.Y:
+                            if (mark.Y == index)
+                            {
+                                yield return mark;
+                            }
+                            break;
 
-                    case Axis.Z:
-                        if (mark.Z == index)
-                        {
-                            yield return mark;
-                        }
-                        break;
+                        case Axis.Z:
+                            if (mark.Z == index)
+                            {
+                                yield return mark;
+                            }
+                            break;
+                    }
                 }
             }
         }
 
         public IEnumerable<Point3D> GetAll()
         {
-            foreach (var mark in _marks)
-            {
-                yield return mark;
-            }
+            return _marks;
         }
 
         public IEnumerable<Point3D> GetCenters()
@@ -204,10 +234,23 @@ namespace Model
             return _centers;
         }
 
+        public LabelLayerCrop GetLayerCrop(int zindex)
+        {
+            LabelLayerCrop crop;
+
+            if (_layerCrops.TryGetValue(zindex, out crop)) return crop;
+
+            crop = new LabelLayerCrop();
+            _layerCrops[zindex] = crop;
+
+            return crop;
+        }
+
         public void Reset()
         {
             _marks.Clear();
             _centers.Clear();
+            _layerCrops.Clear();
 
 #if DEBUG
             _debugs.Clear();
@@ -223,6 +266,41 @@ namespace Model
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void CalculateLayerCrop(int zindex)
+        {
+            var crop = GetLayerCrop(zindex);
+
+            var proj = GetProjection(Axis.Z, zindex);
+
+            crop.XL = Int32.MaxValue;
+            crop.YL = Int32.MaxValue;
+            crop.XR = Int32.MinValue;
+            crop.YR = Int32.MinValue;
+
+            foreach (var point3D in proj)
+            {
+                if (point3D.X > crop.XR)
+                {
+                    crop.XR = point3D.X;
+                }
+
+                if (point3D.X < crop.XL)
+                {
+                    crop.XL = point3D.X;
+                }
+
+                if (point3D.Y > crop.YR)
+                {
+                    crop.YR = point3D.Y;
+                }
+
+                if (point3D.Y < crop.YL)
+                {
+                    crop.YL = point3D.Y;
+                }
+            }
         }
 
 #if DEBUG

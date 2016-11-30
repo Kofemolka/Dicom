@@ -520,5 +520,10 @@ namespace DicomImageViewer
             _cropLock = CropLock.None;
             Cursor = Cursors.Default;
         }
+
+        private void surface_MouseLeave(object sender, EventArgs e)
+        {
+            Cursor = Cursors.Default;
+        }
     }
 }

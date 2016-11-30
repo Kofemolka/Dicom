@@ -12,7 +12,7 @@ namespace Model.Scanners
         {
             public Point3D LastScanPoint { get; set; }
 
-            public BuildMethod BuildMethod => BuildMethod.Threshold;
+            public BuildMethod BuildMethod => BuildMethod.EdgeTracing;
 
             public ushort Threshold { get; set; } = 2;
         }
@@ -20,11 +20,11 @@ namespace Model.Scanners
         private readonly IScanData _scanData;
         private readonly Func<ILabelMap> _labelMap;
         private readonly ILookupTable _lookupTable;
-        private readonly Func<Point3D, int, bool> _crossCheck;
+        private readonly ICrossChecker _crossCheck;
 
         public EdgeScannerProperties ScannerProperties { get; set; } = new EdgeScannerProperties();
 
-        public EdgeScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, Func<Point3D, int, bool> crossCheck)
+        public EdgeScanner(IScanData scanData, ILookupTable lookupTable, Func<ILabelMap> labelMap, ICrossChecker crossCheck)
         {
             _scanData = scanData;
             _labelMap = labelMap;
@@ -40,6 +40,8 @@ namespace Model.Scanners
                 LastScanPoint = ScannerProperties.LastScanPoint,
                 Threshold = ScannerProperties.Threshold
             };
+
+            _crossCheck.Prepare(_labelMap().Id);
 
             var crop = _labelMap().Crop;
 
@@ -110,7 +112,7 @@ namespace Model.Scanners
 
                 var probe = _lookupTable.Map(projection.Pixels[scalarPoint.X, scalarPoint.Y]);
 
-                if (!fixProbe.InRange(probe) || _crossCheck(scalarPoint.To3D(Axis.Z, point.Z), _labelMap().Id))
+                if (!fixProbe.InRange(probe) || _crossCheck.Check(scalarPoint.To3D(Axis.Z, point.Z), _labelMap().Id))
                 {
                     break;
                 }
@@ -162,7 +164,7 @@ namespace Model.Scanners
                 bool edge;
                 test = GetNextNeighbor(current, dir, Z, out edge);                
 
-                if(edge || !SafeCheckProbe(fixProbe, proj, test) || _crossCheck(test.To3D(Axis.Z, Z), _labelMap().Id))
+                if(edge || !SafeCheckProbe(fixProbe, proj, test) || _crossCheck.Check(test.To3D(Axis.Z, Z), _labelMap().Id))
                 {
                     res.Add(test.To3D(Axis.Z, Z));                    
                     dir = TurnLeft(dir);

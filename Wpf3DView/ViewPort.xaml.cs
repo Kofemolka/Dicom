@@ -157,11 +157,12 @@ namespace Wpf3DView
             MeshGeometry3D geo = null;
             switch (label.ScannerProperties.BuildMethod)
             {
-                case Model.BuildMethod.RayCasting:
+                case BuildMethod.RayCasting:
                     geo = BuildMesh(label.GetAll());
                     break;
 
-                case Model.BuildMethod.Threshold:
+                case BuildMethod.Threshold:
+                case BuildMethod.EdgeTracing:
                     geo = BuildPointCloud(label.GetAll());
                     break;
 
