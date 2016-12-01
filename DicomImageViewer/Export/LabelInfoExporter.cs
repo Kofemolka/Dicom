@@ -8,9 +8,11 @@ namespace DicomImageViewer.Export
         {
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileName, false))
             {
+                file.WriteLine("Label, Volume (mm3)");
+
                 foreach (var labelMap in set.All)
                 {
-                    file.WriteLine(labelMap.Name + "," + labelMap.Volume);
+                    file.WriteLine(labelMap.Name + ", " + labelMap.Volume);
                 }
             }
         }

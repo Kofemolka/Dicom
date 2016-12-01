@@ -167,7 +167,7 @@ namespace Model
                 _marks.Add(point);
             }
 
-            _layerCrops.Keys.Add(point.Z);
+            _layerCrops[point.Z] = new LabelLayerCrop();
         }
 
         public void Add(IEnumerable<Point3D> points)

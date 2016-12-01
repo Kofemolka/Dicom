@@ -116,7 +116,7 @@
             // 
             this.trackRays.LargeChange = 16;
             this.trackRays.Location = new System.Drawing.Point(0, 16);
-            this.trackRays.Maximum = 720;
+            this.trackRays.Maximum = 360;
             this.trackRays.Minimum = 16;
             this.trackRays.Name = "trackRays";
             this.trackRays.Size = new System.Drawing.Size(240, 45);

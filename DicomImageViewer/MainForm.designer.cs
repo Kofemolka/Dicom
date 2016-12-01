@@ -47,8 +47,9 @@ namespace DicomImageViewer
             this.tabThresh = new System.Windows.Forms.TabPage();
             this._thresholdPropertiesView = new DicomImageViewer.View.ThresholdPropertiesView();
             this.tabEdgeFinder = new System.Windows.Forms.TabPage();
-            this.labelMapView = new DicomImageViewer.View.LabelMapView();
             this.edgeFinderProperties1 = new DicomImageViewer.View.EdgeFinderPropertiesView();
+            this.labelMapView = new DicomImageViewer.View.LabelMapView();
+            this.chCrossCheck = new System.Windows.Forms.CheckBox();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -158,6 +159,7 @@ namespace DicomImageViewer
             // panel1
             // 
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.chCrossCheck);
             this.panel1.Controls.Add(this.btnExport);
             this.panel1.Controls.Add(this.tabsScanners);
             this.panel1.Controls.Add(this.labelMapView);
@@ -203,7 +205,7 @@ namespace DicomImageViewer
             this.tabRayScanner.TabIndex = 0;
             this.tabRayScanner.Text = "Rays";
             // 
-            // RayCastingPropertiesView
+            // _rayCastingPropertiesView
             // 
             this._rayCastingPropertiesView.BackColor = System.Drawing.SystemColors.Control;
             this._rayCastingPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -223,7 +225,7 @@ namespace DicomImageViewer
             this.tabThresh.TabIndex = 1;
             this.tabThresh.Text = "Threashold";
             // 
-            // ThresholdPropertiesView
+            // _thresholdPropertiesView
             // 
             this._thresholdPropertiesView.BackColor = System.Drawing.SystemColors.Control;
             this._thresholdPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -243,13 +245,6 @@ namespace DicomImageViewer
             this.tabEdgeFinder.TabIndex = 2;
             this.tabEdgeFinder.Text = "Edge";
             // 
-            // labelMapView
-            // 
-            this.labelMapView.Location = new System.Drawing.Point(11, 493);
-            this.labelMapView.Name = "labelMapView";
-            this.labelMapView.Size = new System.Drawing.Size(255, 257);
-            this.labelMapView.TabIndex = 24;
-            // 
             // edgeFinderProperties1
             // 
             this.edgeFinderProperties1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -257,6 +252,24 @@ namespace DicomImageViewer
             this.edgeFinderProperties1.Name = "edgeFinderProperties1";
             this.edgeFinderProperties1.Size = new System.Drawing.Size(248, 347);
             this.edgeFinderProperties1.TabIndex = 0;
+            // 
+            // labelMapView
+            // 
+            this.labelMapView.Location = new System.Drawing.Point(11, 493);
+            this.labelMapView.Name = "labelMapView";
+            this.labelMapView.Size = new System.Drawing.Size(255, 257);
+            this.labelMapView.TabIndex = 24;
+            // 
+            // chCrossCheck
+            // 
+            this.chCrossCheck.AutoSize = true;
+            this.chCrossCheck.Location = new System.Drawing.Point(148, 502);
+            this.chCrossCheck.Name = "chCrossCheck";
+            this.chCrossCheck.Size = new System.Drawing.Size(86, 17);
+            this.chCrossCheck.TabIndex = 27;
+            this.chCrossCheck.Text = "Cross Check";
+            this.chCrossCheck.UseVisualStyleBackColor = true;
+            this.chCrossCheck.CheckedChanged += new System.EventHandler(this.chCrossCheck_CheckedChanged);
             // 
             // MainForm
             // 
@@ -303,6 +316,7 @@ namespace DicomImageViewer
         private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.TabPage tabEdgeFinder;
         private View.EdgeFinderPropertiesView edgeFinderProperties1;
+        private System.Windows.Forms.CheckBox chCrossCheck;
     }
 }
 

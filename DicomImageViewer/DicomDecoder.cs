@@ -161,10 +161,15 @@ namespace DicomImageViewer
                     else
                         slice.typeofDicomFile = TypeOfDicomFile.DicomOldTypeFile;
                 }
+                else
+                {
+                    return null;
+                }
             }
             catch
             {
                 // Nothing here
+                return null;
             }
             finally
             {

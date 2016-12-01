@@ -13,10 +13,10 @@ namespace Model.Scanners
             public Point3D LastScanPoint { get; set; }
             public BuildMethod BuildMethod => BuildMethod.RayCasting;
 
-            public int MaxSkip { get; set; } = 6;
+            public int MaxSkip { get; set; } = 4;
             public ushort thUp { get; set; } = 5;
             public ushort thDown { get; set; } = 5;
-            public int Rays { get; set; } = 360;
+            public int Rays { get; set; } = 180;
             public bool OptimizePlanes { get; set; } = true;
             public int Smoothness { get; set; } = 10;
         }

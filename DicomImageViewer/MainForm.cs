@@ -193,7 +193,7 @@ namespace DicomImageViewer
                 var decoder = new DicomDecoder();
 
                 var slice = decoder.ReadDicomFile(file);
-
+                
                 _scanSet.AddSlice(slice);
 
                 progress.Tick();
@@ -220,11 +220,23 @@ namespace DicomImageViewer
 
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    LabelInfoExporter.Export(_labelMapSet, Path.Combine(dlg.SelectedPath, "Labels.csv"));
+                    try
+                    {
+                        LabelInfoExporter.Export(_labelMapSet, Path.Combine(dlg.SelectedPath, "Labels.csv"));
 
-                    _3dView.Export(dlg.SelectedPath);
+                        _3dView.Export(dlg.SelectedPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Can not write to '" + dlg.SelectedPath + "'!", "Error");
+                    }
                 }
             }
+        }
+
+        private void chCrossCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            _crossChecker.Enabled = chCrossCheck.Checked;
         }
     }
 }

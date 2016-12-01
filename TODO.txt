@@ -1,8 +1,20 @@
 Bugs:
 
 
+
+Scan 2263*1975 -> can't catch tissue
+Remember last options for each method -> use them when creating new layer/opening app
+Undo -> Remember [prev point for each layer
+
+
 Features:
 New viewport or fix trackball
-Remember Scanner properties per Label
 
 
+
+Fixed:
+Open directory with Project file -> wrong Interpolation
+Threshhold not working
+CSV export -> wrong formatting when opened in excel
+Export to locked directory -> Exception -> handle
+Check edge, its weird

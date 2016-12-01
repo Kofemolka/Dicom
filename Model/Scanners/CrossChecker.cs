@@ -14,6 +14,8 @@ namespace Model.Scanners
     {
         private readonly LabelMapSet _labelMapSet;
         private List<ILabelMap> _labelMaps = new List<ILabelMap>();
+
+        public bool Enabled { get; set; }
          
         public CrossChecker(LabelMapSet labelMapSet)
         {
@@ -27,6 +29,9 @@ namespace Model.Scanners
 
         public bool Check(Point3D point, int layerId)
         {
+            if (!Enabled)
+                return false;
+
             foreach (var labelMap in _labelMaps)
             {
                 var crop = labelMap.GetLayerCrop(point.Z);
@@ -38,7 +43,6 @@ namespace Model.Scanners
                     var proj = labelMap.GetProjection(Axis.Z, point.Z);
                     if (checkProjection(p2d, proj))
                     {
-                        
                         return true;
                     }
                 }

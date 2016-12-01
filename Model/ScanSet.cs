@@ -37,7 +37,7 @@ namespace Model
 
         public void AddSlice(Slice slice)
         {
-            if (slice.typeofDicomFile == TypeOfDicomFile.NotDicom)
+            if (slice == null || slice.typeofDicomFile != TypeOfDicomFile.Dicom3File)
                 return;
 
             lock (_slices)
