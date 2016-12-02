@@ -20,8 +20,8 @@ namespace Wpf3DView
         private readonly RotateTransform3D _rotateTransform3D = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 0, 1), 0));
         private readonly TranslateTransform3D _translateTransform3D = new TranslateTransform3D(0, 0, 0);
 
-        private readonly Dictionary<string, GeometryModel3D> _models = new Dictionary<string, GeometryModel3D>();
-        private readonly Dictionary<string, GeometryModel3D> _cropModels = new Dictionary<string, GeometryModel3D>();
+        private readonly Dictionary<int, GeometryModel3D> _models = new Dictionary<int, GeometryModel3D>();
+        private readonly Dictionary<int, GeometryModel3D> _cropModels = new Dictionary<int, GeometryModel3D>();
         
         public Trackball Trackball => _trackball;
 
@@ -39,7 +39,7 @@ namespace Wpf3DView
             _trackball.Enabled = true;            
         }
 
-        public IEnumerable<KeyValuePair<string, GeometryModel3D>> GetAllModels()
+        public IEnumerable<KeyValuePair<int, GeometryModel3D>> GetAllModels()
         {
             return _models;
         }
@@ -67,11 +67,11 @@ namespace Wpf3DView
         public void RemoveLabel(ILabelMap label)
         {
             GeometryModel3D model;
-            if (_models.TryGetValue(label.Name, out model))
+            if (_models.TryGetValue(label.Id, out model))
             {
                 _modelGroup.Children.Remove(model);
-                _models.Remove(label.Name);
-                _cropModels.Remove(label.Name);
+                _models.Remove(label.Id);
+                _cropModels.Remove(label.Id);
             }
 
             UpdateView();
@@ -80,10 +80,10 @@ namespace Wpf3DView
         public void UpdateLabelCrop(ILabelMap label)
         {
             GeometryModel3D model;
-            if (!_cropModels.TryGetValue(label.Name, out model))
+            if (!_cropModels.TryGetValue(label.Id, out model))
             {
                 model = new GeometryModel3D();
-                _cropModels.Add(label.Name, model);
+                _cropModels.Add(label.Id, model);
                 _modelGroup.Children.Add(model);
 
                 label.Crop.CropChanged += () =>
@@ -111,10 +111,10 @@ namespace Wpf3DView
         public void UpdateLabel(ILabelMap label)
         {            
             GeometryModel3D model;
-            if (!_models.TryGetValue(label.Name, out model))
+            if (!_models.TryGetValue(label.Id, out model))
             {
                 model = new GeometryModel3D();
-                _models.Add(label.Name, model);
+                _models.Add(label.Id, model);
                 _modelGroup.Children.Add(model);
 
                 UpdateLabelCrop(label);
@@ -124,7 +124,7 @@ namespace Wpf3DView
                     InitModelProperties(model, label);
 
                     GeometryModel3D cropModel;
-                    if (_cropModels.TryGetValue(label.Name, out cropModel))
+                    if (_cropModels.TryGetValue(label.Id, out cropModel))
                     {
                         UpdateCropBox(cropModel, label);
                     }
