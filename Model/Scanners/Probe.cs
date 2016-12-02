@@ -67,7 +67,7 @@ namespace Model.Scanners
             return new Probe()
             {
                 _max = (ushort)(probe + thUp),
-                _min = (ushort)(probe - thDown)
+                _min = (ushort)((probe - thDown) > 0 ? (probe - thDown) : 0)
             };
         }
 
@@ -99,7 +99,7 @@ namespace Model.Scanners
             return new Probe()
             {
                 _max = (ushort)(max + thUp),
-                _min = (ushort)(min - thDown)
+                _min = (ushort)((min - thDown)> 0 ? (min - thDown) : 0)
             };
         }
     }

@@ -108,6 +108,7 @@ namespace Model.Scanners
 
             Helpers.CalculateVolume(_labelMap(), _scanData);
 
+            _labelMap().CalculateCrop();
             _labelMap().FireUpdate();
 
             Task.Factory.StartNew(GC.Collect);

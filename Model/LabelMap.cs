@@ -61,6 +61,7 @@ namespace Model
 
         LabelLayerCrop GetLayerCrop(int zindex);
 
+        void CalculateCrop();
         void FireUpdate();
 
         event LabelDataChangedEvent LabelDataChanged;
@@ -155,9 +156,12 @@ namespace Model
 
         public void FireUpdate()
         {
-            Parallel.ForEach(_layerCrops.Keys, CalculateLayerCrop);
-
             LabelDataChanged?.Invoke();
+        }
+
+        public void CalculateCrop()
+        {
+            Parallel.ForEach(_layerCrops.Keys, CalculateLayerCrop);
         }
 
         public void Add(Point3D point)

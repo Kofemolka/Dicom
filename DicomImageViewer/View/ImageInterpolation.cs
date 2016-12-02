@@ -111,26 +111,26 @@ namespace DicomImageViewer.View
                 int y = e.Y;
 
                 if (x < minX) x = minX;
-                if (x > maxX) x = maxX;
+                if (x >= maxX) x = maxX;
 
                 if (y < minY) y = minY;
-                if (y > maxY) y = maxY;
-
+                if (y >= maxY) y = maxY;
+                
                 var deltaX = x - _lock.X;
                 var deltaY = y - _lock.Y;
-
+                
                 var realX = deltaX / XScale;
                 var realY = -deltaY / YScale;
 
                 if (_lockPoint == LockPoint.Low)
                 {
-                    Lookup.WinMin = _prevWinMin + (int)realX;
-                    Lookup.IntMin = _prevIntMin + (int)realY;
+                    Lookup.WinMin = _prevWinMin + (int) realX;
+                    Lookup.IntMin = (_prevIntMin + (int) realY) < 0 ? 0 : (_prevIntMin + (int) realY);
                 }
                 else
                 {
-                    Lookup.WinMax = _prevWinMax + (int)realX;
-                    Lookup.IntMax = _prevIntMax + (int)realY;
+                    Lookup.WinMax = _prevWinMax + (int) realX;
+                    Lookup.IntMax = (_prevIntMax + (int) realY) < 0 ? 0 : (_prevIntMax + (int) realY);
                 }
             }
         }

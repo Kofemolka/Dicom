@@ -29,13 +29,8 @@ namespace Model
 
             _scanData.DataUpdated += () =>
             {
-
-                int winMin, winMax;
-                _scanData.MinMaxDencity(out winMin, out winMax);
-
-                WinMin = winMin;
-                WinMax = winMax;
-
+                _scanData.MinMaxDencity(out _winMin, out _winMax);
+                
                 Compute();
             };
 
