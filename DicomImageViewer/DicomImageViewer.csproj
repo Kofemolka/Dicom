@@ -32,7 +32,7 @@
     <ProductName>Dicom Scanner</ProductName>
     <PublisherName>Kofemolka</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>4</ApplicationRevision>
+    <ApplicationRevision>6</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -150,6 +150,9 @@
     <EmbeddedResource Include="View\EdgeFinderPropertiesView.resx">
       <DependentUpon>EdgeFinderPropertiesView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="View\ImageInterpolation.resx">
+      <DependentUpon>ImageInterpolation.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="View\LabelMapView.resx">
       <DependentUpon>LabelMapView.cs</DependentUpon>
     </EmbeddedResource>
@@ -186,6 +189,12 @@
     </Compile>
     <Compile Include="View\EdgeFinderPropertiesView.Designer.cs">
       <DependentUpon>EdgeFinderPropertiesView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\ImageInterpolation.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="View\ImageInterpolation.Designer.cs">
+      <DependentUpon>ImageInterpolation.cs</DependentUpon>
     </Compile>
     <Compile Include="View\IScannerPropertiesView.cs" />
     <Compile Include="View\LabelMapView.cs">

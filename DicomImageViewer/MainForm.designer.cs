@@ -35,25 +35,29 @@ namespace DicomImageViewer
             this.label7 = new System.Windows.Forms.Label();
             this.panel2 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.tabs3dInterpolation = new System.Windows.Forms.TabControl();
+            this.tab3D = new System.Windows.Forms.TabPage();
+            this.tabInterpollation = new System.Windows.Forms.TabPage();
             this.bnTags = new System.Windows.Forms.Button();
             this.btnOpenSeries = new System.Windows.Forms.Button();
             this.progBar = new System.Windows.Forms.ProgressBar();
             this.lbDensity = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.Undo = new System.Windows.Forms.Button();
+            this.btnBuild = new System.Windows.Forms.Button();
             this.chCrossCheck = new System.Windows.Forms.CheckBox();
             this.btnExport = new System.Windows.Forms.Button();
             this.tabsScanners = new System.Windows.Forms.TabControl();
             this.tabRayScanner = new System.Windows.Forms.TabPage();
-            this.tabThresh = new System.Windows.Forms.TabPage();
-            this.tabEdgeFinder = new System.Windows.Forms.TabPage();
             this._rayCastingPropertiesView = new DicomImageViewer.View.RayCastingPropertiesView();
+            this.tabThresh = new System.Windows.Forms.TabPage();
             this._thresholdPropertiesView = new DicomImageViewer.View.ThresholdPropertiesView();
+            this.tabEdgeFinder = new System.Windows.Forms.TabPage();
             this.edgeFinderProperties1 = new DicomImageViewer.View.EdgeFinderPropertiesView();
             this.labelMapView = new DicomImageViewer.View.LabelMapView();
-            this.btnBuild = new System.Windows.Forms.Button();
-            this.Undo = new System.Windows.Forms.Button();
             this.panel2.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
+            this.tabs3dInterpolation.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tabsScanners.SuspendLayout();
             this.tabRayScanner.SuspendLayout();
@@ -111,6 +115,7 @@ namespace DicomImageViewer
             this.tableLayoutPanel1.Controls.Add(this.label6, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.label5, 0, 2);
             this.tableLayoutPanel1.Controls.Add(this.label7, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.tabs3dInterpolation, 1, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -121,6 +126,37 @@ namespace DicomImageViewer
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.Size = new System.Drawing.Size(958, 763);
             this.tableLayoutPanel1.TabIndex = 18;
+            // 
+            // tabs3dInterpolation
+            // 
+            this.tabs3dInterpolation.Controls.Add(this.tab3D);
+            this.tabs3dInterpolation.Controls.Add(this.tabInterpollation);
+            this.tabs3dInterpolation.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabs3dInterpolation.Location = new System.Drawing.Point(482, 16);
+            this.tabs3dInterpolation.Name = "tabs3dInterpolation";
+            this.tabs3dInterpolation.SelectedIndex = 0;
+            this.tabs3dInterpolation.Size = new System.Drawing.Size(473, 362);
+            this.tabs3dInterpolation.TabIndex = 18;
+            // 
+            // tab3D
+            // 
+            this.tab3D.Location = new System.Drawing.Point(4, 22);
+            this.tab3D.Name = "tab3D";
+            this.tab3D.Padding = new System.Windows.Forms.Padding(3);
+            this.tab3D.Size = new System.Drawing.Size(465, 336);
+            this.tab3D.TabIndex = 0;
+            this.tab3D.Text = "3D";
+            this.tab3D.UseVisualStyleBackColor = true;
+            // 
+            // tabInterpollation
+            // 
+            this.tabInterpollation.Location = new System.Drawing.Point(4, 22);
+            this.tabInterpollation.Name = "tabInterpollation";
+            this.tabInterpollation.Padding = new System.Windows.Forms.Padding(3);
+            this.tabInterpollation.Size = new System.Drawing.Size(465, 336);
+            this.tabInterpollation.TabIndex = 1;
+            this.tabInterpollation.Text = "Interpolation";
+            this.tabInterpollation.UseVisualStyleBackColor = true;
             // 
             // bnTags
             // 
@@ -177,6 +213,26 @@ namespace DicomImageViewer
             this.panel1.Size = new System.Drawing.Size(280, 763);
             this.panel1.TabIndex = 18;
             // 
+            // Undo
+            // 
+            this.Undo.Location = new System.Drawing.Point(194, 435);
+            this.Undo.Name = "Undo";
+            this.Undo.Size = new System.Drawing.Size(75, 23);
+            this.Undo.TabIndex = 29;
+            this.Undo.Text = "Undo";
+            this.Undo.UseVisualStyleBackColor = true;
+            this.Undo.Click += new System.EventHandler(this.Undo_Click);
+            // 
+            // btnBuild
+            // 
+            this.btnBuild.Location = new System.Drawing.Point(11, 434);
+            this.btnBuild.Name = "btnBuild";
+            this.btnBuild.Size = new System.Drawing.Size(85, 24);
+            this.btnBuild.TabIndex = 28;
+            this.btnBuild.Text = "Build";
+            this.btnBuild.UseVisualStyleBackColor = true;
+            this.btnBuild.Click += new System.EventHandler(this.btnBuild_Click);
+            // 
             // chCrossCheck
             // 
             this.chCrossCheck.AutoSize = true;
@@ -220,6 +276,15 @@ namespace DicomImageViewer
             this.tabRayScanner.TabIndex = 0;
             this.tabRayScanner.Text = "Rays";
             // 
+            // _rayCastingPropertiesView
+            // 
+            this._rayCastingPropertiesView.BackColor = System.Drawing.SystemColors.Control;
+            this._rayCastingPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._rayCastingPropertiesView.Location = new System.Drawing.Point(3, 3);
+            this._rayCastingPropertiesView.Name = "_rayCastingPropertiesView";
+            this._rayCastingPropertiesView.Size = new System.Drawing.Size(248, 288);
+            this._rayCastingPropertiesView.TabIndex = 0;
+            // 
             // tabThresh
             // 
             this.tabThresh.BackColor = System.Drawing.SystemColors.Control;
@@ -229,7 +294,16 @@ namespace DicomImageViewer
             this.tabThresh.Padding = new System.Windows.Forms.Padding(3);
             this.tabThresh.Size = new System.Drawing.Size(254, 294);
             this.tabThresh.TabIndex = 1;
-            this.tabThresh.Text = "Threashold";
+            this.tabThresh.Text = "Threshold";
+            // 
+            // _thresholdPropertiesView
+            // 
+            this._thresholdPropertiesView.BackColor = System.Drawing.SystemColors.Control;
+            this._thresholdPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this._thresholdPropertiesView.Location = new System.Drawing.Point(3, 3);
+            this._thresholdPropertiesView.Name = "_thresholdPropertiesView";
+            this._thresholdPropertiesView.Size = new System.Drawing.Size(248, 288);
+            this._thresholdPropertiesView.TabIndex = 0;
             // 
             // tabEdgeFinder
             // 
@@ -241,24 +315,6 @@ namespace DicomImageViewer
             this.tabEdgeFinder.Size = new System.Drawing.Size(254, 294);
             this.tabEdgeFinder.TabIndex = 2;
             this.tabEdgeFinder.Text = "Edge";
-            // 
-            // _rayCastingPropertiesView
-            // 
-            this._rayCastingPropertiesView.BackColor = System.Drawing.SystemColors.Control;
-            this._rayCastingPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._rayCastingPropertiesView.Location = new System.Drawing.Point(3, 3);
-            this._rayCastingPropertiesView.Name = "_rayCastingPropertiesView";
-            this._rayCastingPropertiesView.Size = new System.Drawing.Size(248, 288);
-            this._rayCastingPropertiesView.TabIndex = 0;
-            // 
-            // _thresholdPropertiesView
-            // 
-            this._thresholdPropertiesView.BackColor = System.Drawing.SystemColors.Control;
-            this._thresholdPropertiesView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._thresholdPropertiesView.Location = new System.Drawing.Point(3, 3);
-            this._thresholdPropertiesView.Name = "_thresholdPropertiesView";
-            this._thresholdPropertiesView.Size = new System.Drawing.Size(248, 288);
-            this._thresholdPropertiesView.TabIndex = 0;
             // 
             // edgeFinderProperties1
             // 
@@ -275,26 +331,6 @@ namespace DicomImageViewer
             this.labelMapView.Size = new System.Drawing.Size(255, 257);
             this.labelMapView.TabIndex = 24;
             // 
-            // btnBuild
-            // 
-            this.btnBuild.Location = new System.Drawing.Point(11, 434);
-            this.btnBuild.Name = "btnBuild";
-            this.btnBuild.Size = new System.Drawing.Size(85, 24);
-            this.btnBuild.TabIndex = 28;
-            this.btnBuild.Text = "Build";
-            this.btnBuild.UseVisualStyleBackColor = true;
-            this.btnBuild.Click += new System.EventHandler(this.btnBuild_Click);
-            // 
-            // Undo
-            // 
-            this.Undo.Location = new System.Drawing.Point(194, 435);
-            this.Undo.Name = "Undo";
-            this.Undo.Size = new System.Drawing.Size(75, 23);
-            this.Undo.TabIndex = 29;
-            this.Undo.Text = "Undo";
-            this.Undo.UseVisualStyleBackColor = true;
-            this.Undo.Click += new System.EventHandler(this.Undo_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -309,6 +345,7 @@ namespace DicomImageViewer
             this.panel2.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
+            this.tabs3dInterpolation.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.tabsScanners.ResumeLayout(false);
@@ -343,6 +380,9 @@ namespace DicomImageViewer
         private System.Windows.Forms.CheckBox chCrossCheck;
         private System.Windows.Forms.Button Undo;
         private System.Windows.Forms.Button btnBuild;
+        private System.Windows.Forms.TabControl tabs3dInterpolation;
+        private System.Windows.Forms.TabPage tab3D;
+        private System.Windows.Forms.TabPage tabInterpollation;
     }
 }
 

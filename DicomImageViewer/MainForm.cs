@@ -19,7 +19,7 @@ namespace DicomImageViewer
         private ProjectionView projectionViewZ;
 
         private readonly ScanSet _scanSet = new ScanSet();
-        private readonly ILookupTable _lookupTable;
+        private readonly LookupTable _lookupTable;
         private readonly LabelMapSet _labelMapSet;
         private readonly VoidScanner _voidScanner;
         private readonly ThresholdScanner _threshScanner;
@@ -27,6 +27,7 @@ namespace DicomImageViewer
         private readonly CrossChecker _crossChecker;
 
         private View.View3D _3dView;
+        private View.ImageInterpolation _imageInterpolation;
 
         public View.View3D View3D => _3dView;
 
@@ -50,6 +51,12 @@ namespace DicomImageViewer
             
             _3dView = new View.View3D(_labelMapSet);
             _3dView.Dock = DockStyle.Fill;
+
+            _imageInterpolation = new ImageInterpolation();
+            _imageInterpolation.Lookup = _lookupTable;
+            _imageInterpolation.Init();
+            _imageInterpolation.Dock = DockStyle.Fill;
+
 
             projectionViewX = new ProjectionView(Axis.X, _scanSet, _lookupTable, _labelMapSet, this);
             projectionViewY = new ProjectionView(Axis.Y, _scanSet, _lookupTable, _labelMapSet, this);
@@ -129,7 +136,9 @@ namespace DicomImageViewer
             this.tableLayoutPanel1.Controls.Add(this.projectionViewX, 1, 3);
             this.tableLayoutPanel1.Controls.Add(this.projectionViewY, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.projectionViewZ, 0, 3);
-            this.tableLayoutPanel1.Controls.Add(_3dView, 1, 1);
+            
+            tab3D.Controls.Add(_3dView);
+            tabInterpollation.Controls.Add(_imageInterpolation);
         }
         
         private void bnTags_Click(object sender, EventArgs e)
