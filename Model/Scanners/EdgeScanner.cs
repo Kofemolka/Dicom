@@ -8,11 +8,9 @@ namespace Model.Scanners
 {
     public class EdgeScanner
     {
-        public class EdgeScannerProperties : IScannerProperties
+        public class EdgeScannerProperties : BaseScannerProperties
         {
-            public Point3D LastScanPoint { get; set; }
-
-            public BuildMethod BuildMethod => BuildMethod.EdgeTracing;
+            public override BuildMethod BuildMethod => BuildMethod.EdgeTracing;
 
             public ushort Threshold { get; set; } = 2;
         }

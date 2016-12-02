@@ -7,10 +7,9 @@ namespace Model.Scanners
 {
     public class ThresholdScanner
     {
-        public class ThresholdScannerProperties : IScannerProperties
-        {
-            public Point3D LastScanPoint { get; set; }
-            public BuildMethod BuildMethod => BuildMethod.Threshold;
+        public class ThresholdScannerProperties : BaseScannerProperties
+        {            
+            public override BuildMethod BuildMethod => BuildMethod.Threshold;
 
             public ushort Threshold { get; set; } = 2;
         }

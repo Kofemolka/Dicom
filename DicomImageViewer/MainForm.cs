@@ -57,7 +57,6 @@ namespace DicomImageViewer
 
             _labelMapSet.LabelMapCurrentSelectionChanged += LabelMapSetOnLabelMapCurrentSelectionChanged;
 
-
             InitUI();
         }
 
@@ -237,6 +236,20 @@ namespace DicomImageViewer
         private void chCrossCheck_CheckedChanged(object sender, EventArgs e)
         {
             _crossChecker.Enabled = chCrossCheck.Checked;
+        }
+
+        private void Undo_Click(object sender, EventArgs e)
+        {
+            var scanProp = (tabsScanners.SelectedTab.Tag as IScannerPropertiesView);
+
+            scanProp?.Undo();
+        }
+
+        private void btnBuild_Click(object sender, EventArgs e)
+        {
+            var scanProp = (tabsScanners.SelectedTab.Tag as IScannerPropertiesView);
+
+            scanProp?.Scan(null);
         }
     }
 }

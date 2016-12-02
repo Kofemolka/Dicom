@@ -61,6 +61,14 @@ namespace DicomImageViewer.View
             Scan(Scanner.ScannerProperties.LastScanPoint);
         }
 
+        public void Undo()
+        {
+            if(Scanner.ScannerProperties.PrevScanPoint != null)
+            {
+                Scan(Scanner.ScannerProperties.PrevScanPoint);
+            }
+        }
+
         public void Scan(Point3D point)
         {
             if (point != null)

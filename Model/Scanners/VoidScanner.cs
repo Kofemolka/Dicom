@@ -8,10 +8,9 @@ namespace Model.Scanners
 {
     public class VoidScanner
     {
-        public class VoidScannerProperties : IScannerProperties
-        {
-            public Point3D LastScanPoint { get; set; }
-            public BuildMethod BuildMethod => BuildMethod.RayCasting;
+        public class VoidScannerProperties : BaseScannerProperties
+        {            
+            public override BuildMethod BuildMethod => BuildMethod.RayCasting;
 
             public int MaxSkip { get; set; } = 4;
             public ushort thUp { get; set; } = 5;

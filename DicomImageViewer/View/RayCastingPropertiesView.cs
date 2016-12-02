@@ -63,13 +63,13 @@ namespace DicomImageViewer.View
         private void trackHiThresh_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.ScannerProperties.thUp = (ushort)trackHiThresh.Value;
-            lbHiThresh.Text = "HI threshold: " + VoidScanner.ScannerProperties.thUp;
+            lbHiThresh.Text = "HI: " + VoidScanner.ScannerProperties.thUp;
         }
 
         private void trackLowThresh_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.ScannerProperties.thDown = (ushort)trackLowThresh.Value;
-            lbLowThresh.Text = "LOW threshold: " + VoidScanner.ScannerProperties.thDown;
+            lbLowThresh.Text = "LOW: " + VoidScanner.ScannerProperties.thDown;
         }
 
         private void trackSkippedPixels_ValueChanged(object sender, EventArgs e)
@@ -81,6 +81,14 @@ namespace DicomImageViewer.View
         private void btnRebuild_Click(object sender, EventArgs e)
         {
             Scan(VoidScanner.ScannerProperties.LastScanPoint);
+        }
+
+        public void Undo()
+        {
+            if (VoidScanner.ScannerProperties.PrevScanPoint != null)
+            {
+                Scan(VoidScanner.ScannerProperties.PrevScanPoint);
+            }
         }
 
         public void Scan(Point3D point)
@@ -117,6 +125,6 @@ namespace DicomImageViewer.View
         private void trackSmoothness_ValueChanged(object sender, EventArgs e)
         {
             VoidScanner.ScannerProperties.Smoothness = trackSmoothness.Value;
-        }
+        }   
     }
 }
